@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.vtom</groupId>
+  <artifactId>vtom-vertx</artifactId>
+  <packaging>pom</packaging>
+  <version>1.0-SNAPSHOT</version>
+
+  <modules>
+    <module>vtom-pipeline</module>
+    <module>vtom-db</module>
+  </modules>
+
+
+  <repositories>
+    <repository>
+      <id>jitpack.io</id>
+      <name>jitpack</name>
+      <url>https://jitpack.io</url>
+    </repository>
+  </repositories>
+
+
+  <properties>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+    <project-charset>UTF-8</project-charset>
+    <basedir>${project.basedir}</basedir>
+    <version-java>1.8</version-java>
+
+    <docker-registry>riy.0u0.me</docker-registry>
+    <repository-namespace>vtoud</repository-namespace>
+
+    <version-plugin-jar>2.3</version-plugin-jar>
+    <version-plugin-compiler>3.2</version-plugin-compiler>
+    <version-plugin-war>2.1.1</version-plugin-war>
+    <version-plugin-surefire>2.18</version-plugin-surefire>
+    <version-plugin-resources>2.7</version-plugin-resources>
+    <version-plugin-source>3.0.1</version-plugin-source>
+    <version-plugin-assembly>2.4.1</version-plugin-assembly>
+    <version-plugin-dependency>2.10</version-plugin-dependency>
+    <version-plugin-docker>0.4.14</version-plugin-docker>
+    <version-plugin-shade>2.4.2</version-plugin-shade>
+
+
+    <version-enoa>1.7-snapshot</version-enoa>
+    <!--<version-enoa>1.6-beta.2</version-enoa>-->
+    <version-junit>4.12</version-junit>
+    <version-vertx>3.6.3</version-vertx>
+    <version-guice>4.2.2</version-guice>
+
+    <version-druid>1.1.14</version-druid>
+    <version-vertx-s3>3.3.3</version-vertx-s3>
+    <version-snowflake>1.0.0</version-snowflake>
+
+    <vension-slf4j>1.7.12</vension-slf4j>
+    <version-logback>1.1.2</version-logback>
+  </properties>
+
+
+  <dependencyManagement>
+    <dependencies>
+
+      <dependency>
+        <groupId>io.vtom</groupId>
+        <artifactId>vtom-pipeline</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-core</artifactId>
+        <version>${version-logback}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>${version-logback}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-access</artifactId>
+        <version>${version-logback}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${vension-slf4j}</version>
+      </dependency>
+
+
+      <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-core</artifactId>
+        <version>${version-vertx}</version>
+      </dependency>
+
+
+      <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-web</artifactId>
+        <version>${version-vertx}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-web-client</artifactId>
+        <version>${version-vertx}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-jdbc-client</artifactId>
+        <version>${version-vertx}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-unit</artifactId>
+        <version>${version-vertx}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.intapp</groupId>
+        <artifactId>vertx-guice</artifactId>
+        <version>1.0</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>23.6-jre</version>
+      </dependency>
+
+      <dependency>
+        <groupId>xyz.downgoon</groupId>
+        <artifactId>snowflake</artifactId>
+        <version>${version-snowflake}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${version-junit}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.enoa</groupId>
+        <artifactId>enoa-toolkit</artifactId>
+        <version>${version-enoa}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.enoa</groupId>
+        <artifactId>enoa-promise</artifactId>
+        <version>${version-enoa}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-codegen</artifactId>
+        <version>${version-vertx}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>druid</artifactId>
+        <version>${version-druid}</version>
+      </dependency>
+
+    </dependencies>
+  </dependencyManagement>
+
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>${version-plugin-jar}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>${version-plugin-assembly}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${version-plugin-compiler}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${version-plugin-surefire}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>${version-plugin-war}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>${version-plugin-resources}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>${version-plugin-dependency}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>${version-plugin-source}</version>
+        </plugin>
+        <plugin>
+          <groupId>com.spotify</groupId>
+          <artifactId>docker-maven-plugin</artifactId>
+          <version>${version-plugin-docker}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>${version-plugin-shade}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+
+</project>
