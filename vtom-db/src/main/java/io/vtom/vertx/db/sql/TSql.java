@@ -13,6 +13,7 @@ public class TSql implements StepIN {
   String sql;
   Kv kv;
   int ord;
+  int after;
 
   public static TSql create(Action action, String sql) {
     return new TSql(action, sql);
@@ -30,6 +31,7 @@ public class TSql implements StepIN {
     this.action = action;
     this.sql = sql;
     this.ord = 0;
+    this.after = 0;
   }
 
   public TSql kv(Kv kv) {
@@ -40,6 +42,12 @@ public class TSql implements StepIN {
   @Override
   public TSql ord(int ord) {
     this.ord = ord;
+    return this;
+  }
+
+  @Override
+  public TSql after(int after) {
+    this.after = after;
     return this;
   }
 

@@ -6,6 +6,8 @@ public interface Piperunnable {
 
   int ord();
 
+  int after();
+
   Pipepromise call();
 
 }

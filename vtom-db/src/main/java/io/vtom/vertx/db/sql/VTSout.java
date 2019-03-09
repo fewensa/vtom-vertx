@@ -32,4 +32,9 @@ public class VTSout implements StepOUT {
     return this.tsql.ord;
   }
 
+  @Override
+  public int after() {
+    return this.tsql.after;
+  }
+
 }

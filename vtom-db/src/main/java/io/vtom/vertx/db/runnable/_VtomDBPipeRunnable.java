@@ -33,6 +33,11 @@ public class _VtomDBPipeRunnable implements Piperunnable {
   }
 
   @Override
+  public int after() {
+    return this.out.after();
+  }
+
+  @Override
   public Pipepromise call() {
     EPDoneArgPromiseBuilder<Pipecycle> promise = Promise.builder().donearg();
     Pipepromise _ret = new Pipepromise(promise.build());

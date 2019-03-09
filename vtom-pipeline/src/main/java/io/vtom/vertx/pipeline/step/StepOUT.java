@@ -4,4 +4,6 @@ public interface StepOUT {
 
   int ord();
 
+  int after();
+
 }

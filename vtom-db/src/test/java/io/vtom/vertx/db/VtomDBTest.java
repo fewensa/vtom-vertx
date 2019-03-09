@@ -14,6 +14,10 @@ import io.vtom.vertx.pipeline.Scope;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class VtomDBTest {
@@ -50,8 +54,8 @@ public class VtomDBTest {
       Pipeline pipeline = Pipeline.pipeline(this.vertx, Scope.scope());
 
       this.vtomdb.dependency(pipeline)
-        .step(pipecycle -> TSql.create(TSql.Action.SELECT, "select * from t_media").ord(1))
-        .step(pipecycle -> TSql.create(TSql.Action.SELECT, "select * from t_tags where mid in ('1')").ord(2))
+        .step(pipecycle -> TSql.create(TSql.Action.SELECT, "select * from t_media"))
+        .step(pipecycle -> TSql.create(TSql.Action.SELECT, "select * from t_tags where mid in ('1')"))
         .end();
 
       pipeline.enqueue()

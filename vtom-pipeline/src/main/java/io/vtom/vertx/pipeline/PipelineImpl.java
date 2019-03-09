@@ -8,6 +8,7 @@ import io.vtom.vertx.pipeline.promise.Pipepromise;
 import io.vtom.vertx.pipeline.runnable.Piperunnable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -20,17 +21,15 @@ class PipelineImpl implements Pipeline {
   }
 
   private Vertx vertx;
-  private Scope scope;
   private Pipecycle pipecycle;
   private Stat stat;
-  private int runStep;
+  private boolean alwayscalled = false;
 
   private List<Piperunnable> piperunnables;
 
 
   PipelineImpl(Vertx vertx, Scope scope) {
     this.vertx = vertx;
-    this.scope = scope;
     this.pipecycle = new Pipecycle(vertx, scope);
     this.piperunnables = null;
     this.stat = Stat.WAIT;
@@ -61,70 +60,94 @@ class PipelineImpl implements Pipeline {
       return _ret;
     }
 
-    this.piperunnables.sort(Comparator.comparingInt(Piperunnable::ord));
+    this.sort();
 
-
-//    for (Piperunnable piperunnable : this.piperunnables) {
-//      Pipepromise pipo = piperunnable.call();
-//    }
-    this.call(promise, 0, null);
-
+    this.callv2(promise, 0, null);
     return _ret;
   }
 
 
-  private void call(EPDoneArgPromiseBuilder<Pipecycle> finalpromise, int ix, Pipepromise steppromise) {
+  private void sort() {
+    this.piperunnables.sort(Comparator.comparingInt(Piperunnable::ord));
+    int nix;
+    while ((nix = this.clocix(runnable -> runnable.ord() <= 0 && runnable.after() > 0)) != -1) {
+      Piperunnable nrunnable = this.piperunnables.get(nix);
+      int tix = this.clocix(runnable -> runnable.ord() == nrunnable.after());
+      Collections.swap(this.piperunnables, nix, tix + 1);
+    }
+  }
+
+  private int clocix(CondIx cix) {
+    for (int i = 0; i < this.piperunnables.size(); i++) {
+      if (cix.cond(this.piperunnables.get(i)))
+        return i;
+    }
+    return -1;
+  }
+
+  private interface CondIx {
+    boolean cond(Piperunnable piperunnable);
+  }
+
+
+  private void callv2(EPDoneArgPromiseBuilder<Pipecycle> endpromise, int ix, Pipepromise steppromise) {
+
     if (this.stat == Stat.STOP) {
-      if (finalpromise.always() != null && steppromise != null) {
-        steppromise.always(() -> finalpromise.always().execute());
-        return;
-      }
-      finalpromise.always().execute();
+      if (!this.alwayscalled && endpromise.always() != null)
+        endpromise.always().execute();
+      this.alwayscalled = true;
       return;
     }
+
     if (ix == this.piperunnables.size()) {
-      finalpromise.dones().forEach(done -> done.execute(this.pipecycle));
-      if (finalpromise.always() != null && steppromise != null) {
-        steppromise.always(() -> finalpromise.always().execute());
-        return;
-      }
-      finalpromise.always().execute();
+      steppromise.done(cycle -> endpromise.dones().forEach(edone -> edone.execute(cycle)));
+      steppromise.always(() -> {
+        if (endpromise.always() == null)
+          return;
+        if (!this.alwayscalled)
+          endpromise.always().execute();
+        this.alwayscalled = true;
+      });
       return;
     }
 
     Piperunnable piperunnable = this.piperunnables.get(ix);
     int ord = piperunnable.ord();
 
-
-    if (steppromise == null || ord <= 0) {
-      Pipepromise parallelpromise = piperunnable.call();
-      parallelpromise.capture(thr -> {
-        finalpromise.captures().forEach(capture -> capture.execute(thr));
-        this.stat = Stat.STOP;
-      });
-
-      this.call(finalpromise, ix + 1, ord <= 0 ? steppromise : parallelpromise);
+    if (steppromise == null) {
+      Pipepromise itempromise = piperunnable.call();
+      this.callv2(endpromise, ix + 1, itempromise);
       return;
     }
 
-    Pipepromise serialpromise  = piperunnable.call();
-    serialpromise.capture(thr -> {
-      finalpromise.captures().forEach(capture -> capture.execute(thr));
+    if (ord <= 0) {
+      Pipepromise parallpromise = piperunnable.call();
+      parallpromise.capture(thr -> {
+        endpromise.captures().forEach(capture -> capture.execute(thr));
+        this.stat = Stat.STOP;
+        if (!this.alwayscalled)
+          endpromise.always().execute();
+        this.alwayscalled = true;
+      });
+      this.callv2(endpromise, ix + 1, steppromise);
+      return;
+    }
+
+    steppromise.capture(thr -> {
       this.stat = Stat.STOP;
-    }).done(done -> this.call(finalpromise, ix + 1, serialpromise));
+      endpromise.captures().forEach(capture -> capture.execute(thr));
+      if (endpromise.always() == null)
+        return;
+      if (!this.alwayscalled)
+        endpromise.always().execute();
+      this.alwayscalled = true;
+    });
 
+    steppromise.done(cycle -> {
+      Pipepromise serialpromise = piperunnable.call();
+      this.callv2(endpromise, ix + 1, serialpromise);
+    });
 
-//    Pipepromise pipo = piperunnable.call();
-//
-//
-//    pipo.done(pipecycle -> {
-//      this.call(finalpromise, ix + 1);
-//    })
-//      .capture(thr -> {
-//        finalpromise.captures().forEach(capture -> capture.execute(thr));
-//        this.stat = Stat.STOP;
-//      });
   }
-
 
 }

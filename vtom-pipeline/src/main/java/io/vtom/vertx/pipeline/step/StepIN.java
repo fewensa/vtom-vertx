@@ -4,6 +4,8 @@ public interface StepIN {
 
   StepIN ord(int ord);
 
+  StepIN after(int after);
+
   StepOUT output();
 
 }
