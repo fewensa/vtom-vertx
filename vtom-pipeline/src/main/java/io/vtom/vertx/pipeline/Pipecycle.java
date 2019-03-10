@@ -1,6 +1,7 @@
 package io.vtom.vertx.pipeline;
 
 import io.vertx.core.Vertx;
+import io.vtom.vertx.pipeline.scope.Scope;
 
 public class Pipecycle {
 

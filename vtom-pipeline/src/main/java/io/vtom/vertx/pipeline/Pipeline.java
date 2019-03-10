@@ -3,15 +3,17 @@ package io.vtom.vertx.pipeline;
 import io.vertx.core.Vertx;
 import io.vtom.vertx.pipeline.promise.Pipepromise;
 import io.vtom.vertx.pipeline.runnable.Piperunnable;
+import io.vtom.vertx.pipeline.scope.Scope;
+import io.vtom.vertx.pipeline.scope.ScopeContext;
 
 public interface Pipeline {
 
   static Pipeline pipeline(Vertx vertx) {
-    return pipeline(vertx, Scope.scope());
+    return pipeline(vertx, Scope.context());
   }
 
-  static Pipeline pipeline(Vertx vertx, Scope scope) {
-    return new PipelineImpl(vertx, scope);
+  static Pipeline pipeline(Vertx vertx, ScopeContext context) {
+    return new PipelineImpl(vertx, context);
   }
 
   Pipecycle cycle();

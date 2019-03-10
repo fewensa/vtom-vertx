@@ -8,34 +8,32 @@ import io.vertx.core.Handler;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLConnection;
+import io.vtom.vertx.db.sql.TSql;
 import io.vtom.vertx.db.sql.VTSout;
 import io.vtom.vertx.pipeline.Pipecycle;
 import io.vtom.vertx.pipeline.Pipeline;
-import io.vtom.vertx.pipeline.Scope;
 import io.vtom.vertx.pipeline.promise.Pipepromise;
 import io.vtom.vertx.pipeline.runnable.Piperunnable;
+import io.vtom.vertx.pipeline.scope.ScopeContext;
+import io.vtom.vertx.pipeline.step.Pipestack;
+import io.vtom.vertx.pipeline.step.StepOUT;
 
 public class _VtomDBPipeRunnable implements Piperunnable {
 
   private Pipeline pipeline;
   private JDBCClient client;
-  private VTSout out;
+  private Pipestack<TSql> pipestack;
 
-  public _VtomDBPipeRunnable(Pipeline pipeline, JDBCClient client, VTSout out) {
+  public _VtomDBPipeRunnable(Pipeline pipeline, JDBCClient client, Pipestack<TSql> pipestack) {
     this.pipeline = pipeline;
     this.client = client;
-    this.out = out;
+    this.pipestack = pipestack;
   }
 
-  @Override
-  public int ord() {
-    return this.out.ord();
-  }
-
-  @Override
-  public int after() {
-    return this.out.after();
-  }
+//  @Override
+//  public StepOUT stepout() {
+//    return this.out;
+//  }
 
   @Override
   public Pipepromise call() {
@@ -73,7 +71,7 @@ public class _VtomDBPipeRunnable implements Piperunnable {
         conn.queryWithParams(output.sql(), output.paras(), this.conncall(promise));
         break;
       default:
-        promise.captures().forEach(capture -> capture.execute(new NoStackTraceThrowable(EnoaTipKit.message("Not support sql action."))));
+        promise.captures().forEach(capture -> capture.execute(new NoStackTraceThrowable(EnoaTipKit.message("eo.tip.vtom.db.not_support_action"))));
         promise.always().execute();
         break;
     }
@@ -91,8 +89,8 @@ public class _VtomDBPipeRunnable implements Piperunnable {
 
       System.out.println(result + " - " + System.nanoTime());
       Pipecycle cycle = this.pipeline.cycle();
-      Scope scope = cycle.scope();
-//      scope.put(this.ord(), result);
+
+      ScopeContext.context(cycle.scope()).put(this.out, result);
 
       promise.dones().forEach(done -> done.execute(cycle));
       if (promise.always() != null)

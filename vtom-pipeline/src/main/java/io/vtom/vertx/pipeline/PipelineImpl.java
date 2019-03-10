@@ -3,14 +3,14 @@ package io.vtom.vertx.pipeline;
 import io.enoa.promise.Promise;
 import io.enoa.promise.builder.EPDoneArgPromiseBuilder;
 import io.enoa.toolkit.collection.CollectionKit;
+import io.enoa.toolkit.eo.tip.EnoaTipKit;
 import io.vertx.core.Vertx;
 import io.vtom.vertx.pipeline.promise.Pipepromise;
 import io.vtom.vertx.pipeline.runnable.Piperunnable;
+import io.vtom.vertx.pipeline.scope.ScopeContext;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 class PipelineImpl implements Pipeline {
 
@@ -28,9 +28,9 @@ class PipelineImpl implements Pipeline {
   private List<Piperunnable> piperunnables;
 
 
-  PipelineImpl(Vertx vertx, Scope scope) {
+  PipelineImpl(Vertx vertx, ScopeContext context) {
     this.vertx = vertx;
-    this.pipecycle = new Pipecycle(vertx, scope);
+    this.pipecycle = new Pipecycle(vertx, context.scope());
     this.piperunnables = null;
     this.stat = Stat.WAIT;
   }
@@ -44,6 +44,13 @@ class PipelineImpl implements Pipeline {
   public Pipeline next(Piperunnable piperunnable) {
     if (this.piperunnables == null)
       this.piperunnables = new ArrayList<>();
+    boolean exists = this.piperunnables.stream()
+      .filter(runnable -> runnable.stepout().ord() > 0)
+      .map(runnable -> runnable.stepout().ord())
+      .collect(Collectors.toSet())
+      .contains(piperunnable.stepout().ord());
+    if (exists)
+      throw new IllegalArgumentException(EnoaTipKit.message("eo.tip.vtom.pipeline.duplicates_ord"));
     this.piperunnables.add(piperunnable);
     return this;
   }
@@ -60,21 +67,34 @@ class PipelineImpl implements Pipeline {
       return _ret;
     }
 
-    this.sort();
+    this.recheck();
 
     this.callv2(promise, 0, null);
     return _ret;
   }
 
 
-  private void sort() {
-    this.piperunnables.sort(Comparator.comparingInt(Piperunnable::ord));
+  private void recheck() {
+    Set<String> idsets = this.piperunnables.stream()
+      .map(runnable -> runnable.stepout().id())
+      .collect(Collectors.toSet());
+    if (idsets.size() != this.piperunnables.size())
+      throw new RuntimeException(EnoaTipKit.message("eo.tip.vtom.pipeline.duplicates_id"));
+    CollectionKit.clear(idsets);
+
+    this.piperunnables.sort(Comparator.comparingInt(o -> o.stepout().ord()));
+    Set<String> moveds = new HashSet<>(this.piperunnables.size());
     int nix;
-    while ((nix = this.clocix(runnable -> runnable.ord() <= 0 && runnable.after() > 0)) != -1) {
+    while ((nix = this.clocix(runnable -> !moveds.contains(runnable.stepout().id()) && runnable.stepout().ord() <= 0 && runnable.stepout().after() > 0)) != -1) {
       Piperunnable nrunnable = this.piperunnables.get(nix);
-      int tix = this.clocix(runnable -> runnable.ord() == nrunnable.after());
-      Collections.swap(this.piperunnables, nix, tix + 1);
+      moveds.add(nrunnable.stepout().id());
+      int tix = this.clocix(runnable -> runnable.stepout().ord() == nrunnable.stepout().after());
+      if (tix == -1)
+        continue;
+//      Collections.swap(this.piperunnables, nix, tix);
+      Collections.rotate(this.piperunnables.subList(nix, tix + 1), -1);
     }
+    CollectionKit.clear(moveds);
   }
 
   private int clocix(CondIx cix) {
@@ -112,7 +132,7 @@ class PipelineImpl implements Pipeline {
     }
 
     Piperunnable piperunnable = this.piperunnables.get(ix);
-    int ord = piperunnable.ord();
+    int ord = piperunnable.stepout().ord();
 
     if (steppromise == null) {
       Pipepromise itempromise = piperunnable.call();

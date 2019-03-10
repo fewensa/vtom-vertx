@@ -1,5 +1,6 @@
 package io.vtom.vertx.db.sql;
 
+import io.enoa.toolkit.digest.UUIDKit;
 import io.enoa.toolkit.map.Kv;
 import io.vtom.vertx.pipeline.step.StepIN;
 
@@ -14,6 +15,7 @@ public class TSql implements StepIN {
   Kv kv;
   int ord;
   int after;
+  String id;
 
   public static TSql create(Action action, String sql) {
     return new TSql(action, sql);
@@ -32,10 +34,17 @@ public class TSql implements StepIN {
     this.sql = sql;
     this.ord = 0;
     this.after = 0;
+    this.id = UUIDKit.next(false);
   }
 
   public TSql kv(Kv kv) {
     this.kv = kv;
+    return this;
+  }
+
+  @Override
+  public TSql id(String id) {
+    this.id = id;
     return this;
   }
 

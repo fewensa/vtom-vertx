@@ -1,5 +1,6 @@
 package io.vtom.vertx.db.sql;
 
+import io.enoa.toolkit.text.TextKit;
 import io.vertx.core.json.JsonArray;
 import io.vtom.vertx.pipeline.step.StepOUT;
 
@@ -28,6 +29,11 @@ public class VTSout implements StepOUT {
   }
 
   @Override
+  public String id() {
+    return this.tsql.id;
+  }
+
+  @Override
   public int ord() {
     return this.tsql.ord;
   }
@@ -37,4 +43,8 @@ public class VTSout implements StepOUT {
     return this.tsql.after;
   }
 
+  @Override
+  public String toString() {
+    return TextKit.union(this.id(), " <", this.ord(), " AF ", this.after(), "> ", " [", this.sql(), "]");
+  }
 }

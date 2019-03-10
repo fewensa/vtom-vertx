@@ -10,13 +10,12 @@ import io.vertx.ext.unit.TestSuite;
 import io.vertx.ext.unit.report.ReportOptions;
 import io.vtom.vertx.db.sql.TSql;
 import io.vtom.vertx.pipeline.Pipeline;
-import io.vtom.vertx.pipeline.Scope;
+import io.vtom.vertx.pipeline.scope.Scope;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -51,16 +50,20 @@ public class VtomDBTest {
     this.suite.test("ord", ctx -> {
       Async async = ctx.async();
 
-      Pipeline pipeline = Pipeline.pipeline(this.vertx, Scope.scope());
+      Pipeline pipeline = Pipeline.pipeline(this.vertx, Scope.context());
 
       this.vtomdb.dependency(pipeline)
-        .step(pipecycle -> TSql.create(TSql.Action.SELECT, "select * from t_media"))
-        .step(pipecycle -> TSql.create(TSql.Action.SELECT, "select * from t_tags where mid in ('1')"))
-        .end();
+        .step(pipecycle -> TSql.create(TSql.Action.SELECT, "select * from t_media").ord(1))
+        .step(pipecycle -> {
+          Scope scope = pipecycle.scope();
+          return TSql.create(TSql.Action.SELECT, "select * from t_tags where mid in ('1')").ord(2).after(1);
+        })
+        .load();
 
       pipeline.enqueue()
         .done(pipecycle -> {
           Scope scope = pipecycle.scope();
+          System.out.println(scope);
         })
         .capture(Throwable::printStackTrace)
         .always(() -> {
@@ -77,6 +80,23 @@ public class VtomDBTest {
       }
 
     }).run(new TestOptions().addReporter(new ReportOptions().setTo("console")));
+  }
+
+  @Test
+  public void testList() {
+    List<String> arr = new ArrayList<String>(){{
+      add("A");
+      add("B");
+      add("C");
+      add("D");
+    }};
+
+    System.out.println(arr);
+//    Collections.swap(arr, 0, 3);
+//    System.out.println(arr);
+
+    Collections.rotate(arr.subList(1, 3), -1);
+    System.out.println(arr);
   }
 
 }

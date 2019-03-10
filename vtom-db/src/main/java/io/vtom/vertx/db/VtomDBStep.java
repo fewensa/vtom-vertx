@@ -4,7 +4,6 @@ import io.enoa.toolkit.collection.CollectionKit;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vtom.vertx.db.runnable._VtomDBPipeRunnable;
 import io.vtom.vertx.db.sql.TSql;
-import io.vtom.vertx.db.sql.VTSout;
 import io.vtom.vertx.pipeline.Pipeline;
 import io.vtom.vertx.pipeline.runnable.Piperunnable;
 import io.vtom.vertx.pipeline.step.Pipestack;
@@ -17,34 +16,31 @@ class VtomDBStep implements Pipestep<TSql> {
 
   private Pipeline pipeline;
   private JDBCClient client;
-  private List<TSql> steps;
+  private List<Pipestack<TSql>> steps;
 
   VtomDBStep(Pipeline pipeline, JDBCClient client) {
     this.pipeline = pipeline;
     this.client = client;
-    this.steps = null;
   }
 
   @Override
   public Pipestep<TSql> step(Pipestack<TSql> pipestack) {
-    TSql tsql = pipestack.back(this.pipeline.cycle());
+//    TSql tsql = pipestack.back(this.pipeline.cycle());
     if (this.steps == null)
       this.steps = new ArrayList<>();
-    this.steps.add(tsql);
+    this.steps.add(pipestack);
     return this;
   }
 
   @Override
-  public void end() {
+  public void load() {
     if (CollectionKit.isEmpty(this.steps))
       return;
     this.steps.forEach(tsql -> this.pipeline.next(this.piperunable(tsql)));
   }
 
-  private Piperunnable piperunable(TSql tsql) {
-    VTSout output = tsql.output();
-
-    return new _VtomDBPipeRunnable(this.pipeline, this.client, output);
+  private Piperunnable piperunable(Pipestack<TSql> pipestack) {
+    return new _VtomDBPipeRunnable(this.pipeline, this.client, pipestack);
   }
 
 
