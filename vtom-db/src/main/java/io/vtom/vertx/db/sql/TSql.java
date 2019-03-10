@@ -1,21 +1,21 @@
 package io.vtom.vertx.db.sql;
 
-import io.enoa.toolkit.digest.UUIDKit;
 import io.enoa.toolkit.map.Kv;
+import io.vertx.core.json.JsonArray;
 import io.vtom.vertx.pipeline.step.StepIN;
+import io.vtom.vertx.pipeline.step.StepOUT;
+import io.vtom.vertx.pipeline.step.StepWrapper;
 
 public class TSql implements StepIN {
+
 
   public enum Action {
     SELECT, UPDATE, CALL
   }
 
-  Action action;
-  String sql;
-  Kv kv;
-  int ord;
-  int after;
-  String id;
+  private Action action;
+  private String sql;
+  private Kv kv;
 
   public static TSql create(Action action, String sql) {
     return new TSql(action, sql);
@@ -32,9 +32,6 @@ public class TSql implements StepIN {
   private TSql(Action action, String sql) {
     this.action = action;
     this.sql = sql;
-    this.ord = 0;
-    this.after = 0;
-    this.id = UUIDKit.next(false);
   }
 
   public TSql kv(Kv kv) {
@@ -43,26 +40,39 @@ public class TSql implements StepIN {
   }
 
   @Override
-  public TSql id(String id) {
-    this.id = id;
-    return this;
-  }
+  public <I extends StepIN> StepOUT out(StepWrapper<I> wrapper) {
+    return new VTSout() {
+      @Override
+      public Action action() {
+        return action;
+      }
 
-  @Override
-  public TSql ord(int ord) {
-    this.ord = ord;
-    return this;
-  }
+      @Override
+      public String sql() {
+        return sql;
+      }
 
-  @Override
-  public TSql after(int after) {
-    this.after = after;
-    return this;
-  }
+      @Override
+      public JsonArray paras() {
+        // todo fill pars
+        return new JsonArray();
+      }
 
-  @Override
-  public VTSout output() {
-    return VTSout.create(this);
+      @Override
+      public String id() {
+        return wrapper.id();
+      }
+
+      @Override
+      public int ord() {
+        return wrapper.ord();
+      }
+
+      @Override
+      public int after() {
+        return wrapper.after();
+      }
+    };
   }
 
   @Override

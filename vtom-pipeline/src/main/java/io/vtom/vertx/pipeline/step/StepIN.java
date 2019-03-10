@@ -2,12 +2,8 @@ package io.vtom.vertx.pipeline.step;
 
 public interface StepIN {
 
-  StepIN id(String id);
+  <I extends StepIN> StepOUT out(StepWrapper<I> wrapper);
 
-  StepIN ord(int ord);
 
-  StepIN after(int after);
-
-  StepOUT output();
 
 }

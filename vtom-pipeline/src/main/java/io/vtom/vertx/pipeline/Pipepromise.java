@@ -1,10 +1,9 @@
-package io.vtom.vertx.pipeline.promise;
+package io.vtom.vertx.pipeline;
 
 import io.enoa.promise.DoneArgPromise;
 import io.enoa.promise.arg.PromiseArg;
 import io.enoa.promise.arg.PromiseCapture;
 import io.enoa.promise.arg.PromiseVoid;
-import io.vtom.vertx.pipeline.Pipecycle;
 
 public class Pipepromise implements DoneArgPromise<Pipecycle> {
 

@@ -12,22 +12,21 @@ import io.vtom.vertx.db.sql.TSql;
 import io.vtom.vertx.db.sql.VTSout;
 import io.vtom.vertx.pipeline.Pipecycle;
 import io.vtom.vertx.pipeline.Pipeline;
-import io.vtom.vertx.pipeline.promise.Pipepromise;
-import io.vtom.vertx.pipeline.runnable.Piperunnable;
+import io.vtom.vertx.pipeline.Pipepromise;
+import io.vtom.vertx.pipeline.Piperunnable;
 import io.vtom.vertx.pipeline.scope.ScopeContext;
-import io.vtom.vertx.pipeline.step.Pipestack;
-import io.vtom.vertx.pipeline.step.StepOUT;
+import io.vtom.vertx.pipeline.step.StepWrapper;
 
-public class _VtomDBPipeRunnable implements Piperunnable {
+public class _VtomDBPipeRunnable implements Piperunnable<TSql, VTSout> {
 
   private Pipeline pipeline;
   private JDBCClient client;
-  private Pipestack<TSql> pipestack;
+  private StepWrapper<TSql> wrapper;
 
-  public _VtomDBPipeRunnable(Pipeline pipeline, JDBCClient client, Pipestack<TSql> pipestack) {
+  public _VtomDBPipeRunnable(Pipeline pipeline, JDBCClient client, StepWrapper<TSql> wrapper) {
     this.pipeline = pipeline;
     this.client = client;
-    this.pipestack = pipestack;
+    this.wrapper = wrapper;
   }
 
 //  @Override
@@ -36,7 +35,12 @@ public class _VtomDBPipeRunnable implements Piperunnable {
 //  }
 
   @Override
-  public Pipepromise call() {
+  public StepWrapper<TSql> wrapper() {
+    return this.wrapper;
+  }
+
+  @Override
+  public Pipepromise call(VTSout output) {
     EPDoneArgPromiseBuilder<Pipecycle> promise = Promise.builder().donearg();
     Pipepromise _ret = new Pipepromise(promise.build());
     this.client.getConnection(ar -> {
@@ -47,7 +51,7 @@ public class _VtomDBPipeRunnable implements Piperunnable {
         return;
       }
       SQLConnection conn = ar.result();
-      this.vrun(promise, conn, this.out);
+      this.vrun(promise, conn, output);
     });
     return _ret;
   }
@@ -65,10 +69,10 @@ public class _VtomDBPipeRunnable implements Piperunnable {
 //        });
         break;
       case UPDATE:
-        conn.updateWithParams(output.sql(), output.paras(), this.conncall(promise));
+        conn.updateWithParams(output.sql(), output.paras(), this.conncall(promise, output));
         break;
       case SELECT:
-        conn.queryWithParams(output.sql(), output.paras(), this.conncall(promise));
+        conn.queryWithParams(output.sql(), output.paras(), this.conncall(promise, output));
         break;
       default:
         promise.captures().forEach(capture -> capture.execute(new NoStackTraceThrowable(EnoaTipKit.message("eo.tip.vtom.db.not_support_action"))));
@@ -77,7 +81,7 @@ public class _VtomDBPipeRunnable implements Piperunnable {
     }
   }
 
-  private <T> Handler<AsyncResult<T>> conncall(EPDoneArgPromiseBuilder<Pipecycle> promise) {
+  private <T> Handler<AsyncResult<T>> conncall(EPDoneArgPromiseBuilder<Pipecycle> promise, VTSout output) {
     return ar -> {
       if (ar.failed()) {
         promise.captures().forEach(capture -> capture.execute(ar.cause()));
@@ -90,7 +94,7 @@ public class _VtomDBPipeRunnable implements Piperunnable {
       System.out.println(result + " - " + System.nanoTime());
       Pipecycle cycle = this.pipeline.cycle();
 
-      ScopeContext.context(cycle.scope()).put(this.out, result);
+      ScopeContext.context(cycle.scope()).put(output, result);
 
       promise.dones().forEach(done -> done.execute(cycle));
       if (promise.always() != null)

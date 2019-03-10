@@ -5,9 +5,10 @@ import io.enoa.promise.builder.EPDoneArgPromiseBuilder;
 import io.enoa.toolkit.collection.CollectionKit;
 import io.enoa.toolkit.eo.tip.EnoaTipKit;
 import io.vertx.core.Vertx;
-import io.vtom.vertx.pipeline.promise.Pipepromise;
-import io.vtom.vertx.pipeline.runnable.Piperunnable;
 import io.vtom.vertx.pipeline.scope.ScopeContext;
+import io.vtom.vertx.pipeline.step.StepIN;
+import io.vtom.vertx.pipeline.step.StepOUT;
+import io.vtom.vertx.pipeline.step.StepWrapper;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -41,14 +42,14 @@ class PipelineImpl implements Pipeline {
   }
 
   @Override
-  public Pipeline next(Piperunnable piperunnable) {
+  public <I extends StepIN, O extends StepOUT> Pipeline next(Piperunnable<I, O> piperunnable) {
     if (this.piperunnables == null)
       this.piperunnables = new ArrayList<>();
     boolean exists = this.piperunnables.stream()
-      .filter(runnable -> runnable.stepout().ord() > 0)
-      .map(runnable -> runnable.stepout().ord())
+      .filter(runnable -> runnable.wrapper().ord() > 0)
+      .map(runnable -> runnable.wrapper().ord())
       .collect(Collectors.toSet())
-      .contains(piperunnable.stepout().ord());
+      .contains(piperunnable.wrapper().ord());
     if (exists)
       throw new IllegalArgumentException(EnoaTipKit.message("eo.tip.vtom.pipeline.duplicates_ord"));
     this.piperunnables.add(piperunnable);
@@ -76,19 +77,21 @@ class PipelineImpl implements Pipeline {
 
   private void recheck() {
     Set<String> idsets = this.piperunnables.stream()
-      .map(runnable -> runnable.stepout().id())
+      .map(runnable -> runnable.wrapper().id())
       .collect(Collectors.toSet());
     if (idsets.size() != this.piperunnables.size())
       throw new RuntimeException(EnoaTipKit.message("eo.tip.vtom.pipeline.duplicates_id"));
     CollectionKit.clear(idsets);
 
-    this.piperunnables.sort(Comparator.comparingInt(o -> o.stepout().ord()));
+    this.piperunnables.sort(Comparator.comparingInt(o -> o.wrapper().ord()));
     Set<String> moveds = new HashSet<>(this.piperunnables.size());
     int nix;
-    while ((nix = this.clocix(runnable -> !moveds.contains(runnable.stepout().id()) && runnable.stepout().ord() <= 0 && runnable.stepout().after() > 0)) != -1) {
+    while ((nix = this.clocix(runnable -> !moveds.contains(runnable.wrapper().id()) &&
+      runnable.wrapper().ord() <= 0 &&
+      runnable.wrapper().after() > 0)) != -1) {
       Piperunnable nrunnable = this.piperunnables.get(nix);
-      moveds.add(nrunnable.stepout().id());
-      int tix = this.clocix(runnable -> runnable.stepout().ord() == nrunnable.stepout().after());
+      moveds.add(nrunnable.wrapper().id());
+      int tix = this.clocix(runnable -> runnable.wrapper().ord() == nrunnable.wrapper().after());
       if (tix == -1)
         continue;
 //      Collections.swap(this.piperunnables, nix, tix);
@@ -132,16 +135,19 @@ class PipelineImpl implements Pipeline {
     }
 
     Piperunnable piperunnable = this.piperunnables.get(ix);
-    int ord = piperunnable.stepout().ord();
+    StepWrapper wrapper = piperunnable.wrapper();
+//    int ord = piperunnable.wrapper().ord();
 
     if (steppromise == null) {
-      Pipepromise itempromise = piperunnable.call();
+      StepOUT out = wrapper.stepstack().stepin(this.pipecycle).out(wrapper);
+      Pipepromise itempromise = piperunnable.call(out);
       this.callv2(endpromise, ix + 1, itempromise);
       return;
     }
 
-    if (ord <= 0) {
-      Pipepromise parallpromise = piperunnable.call();
+    if (wrapper.ord() <= 0) {
+      StepOUT out = wrapper.stepstack().stepin(this.pipecycle).out(wrapper);
+      Pipepromise parallpromise = piperunnable.call(out);
       parallpromise.capture(thr -> {
         endpromise.captures().forEach(capture -> capture.execute(thr));
         this.stat = Stat.STOP;
@@ -164,7 +170,8 @@ class PipelineImpl implements Pipeline {
     });
 
     steppromise.done(cycle -> {
-      Pipepromise serialpromise = piperunnable.call();
+      StepOUT out = wrapper.stepstack().stepin(this.pipecycle).out(wrapper);
+      Pipepromise serialpromise = piperunnable.call(out);
       this.callv2(endpromise, ix + 1, serialpromise);
     });
 

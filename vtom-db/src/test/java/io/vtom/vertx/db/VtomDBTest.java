@@ -11,6 +11,7 @@ import io.vertx.ext.unit.report.ReportOptions;
 import io.vtom.vertx.db.sql.TSql;
 import io.vtom.vertx.pipeline.Pipeline;
 import io.vtom.vertx.pipeline.scope.Scope;
+import io.vtom.vertx.pipeline.step.Step;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,16 +54,18 @@ public class VtomDBTest {
       Pipeline pipeline = Pipeline.pipeline(this.vertx, Scope.context());
 
       this.vtomdb.dependency(pipeline)
-        .step(pipecycle -> TSql.create(TSql.Action.SELECT, "select * from t_media").ord(1))
-        .step(pipecycle -> {
-          Scope scope = pipecycle.scope();
-          return TSql.create(TSql.Action.SELECT, "select * from t_tags where mid in ('1')").ord(2).after(1);
-        })
-        .load();
-
-      pipeline.enqueue()
-        .done(pipecycle -> {
-          Scope scope = pipecycle.scope();
+        .step(Step.with(cycle -> {
+          System.out.println(11111);
+          return TSql.create(TSql.Action.SELECT, "select * from t_media");
+        }).ord(0).after(1))
+        .step(Step.with(cycle -> {
+          System.out.println(2222);
+          return TSql.create(TSql.Action.SELECT, "select * from t_tags where mid in ('1')");
+        }).ord(10))
+        .join()
+        .enqueue()
+        .done(cycle -> {
+          Scope scope = cycle.scope();
           System.out.println(scope);
         })
         .capture(Throwable::printStackTrace)
@@ -84,7 +87,7 @@ public class VtomDBTest {
 
   @Test
   public void testList() {
-    List<String> arr = new ArrayList<String>(){{
+    List<String> arr = new ArrayList<String>() {{
       add("A");
       add("B");
       add("C");
