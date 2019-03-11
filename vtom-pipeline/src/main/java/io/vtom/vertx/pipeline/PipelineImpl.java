@@ -165,11 +165,11 @@ class PipelineImpl implements Pipeline {
               return;
             }
 
-            Set<Integer> ordset = this.piperunnables.stream()
-              .map(runnable -> runnable.wrapper().ord())
+            Set<PipeRunnable> ordset = this.piperunnables.stream()
+              .filter(runnable -> runnable.wrapper().ord() > 0)
               .collect(Collectors.toSet());
             // all pipeline are parallel pipeline, last pipeline call promise done.
-            if (ordset.size() == 1 && ordset.iterator().next() == 0) {
+            if (ordset.size() == 0) {
               Promise.builder().handler().handleDoneArg(endpromise, this.pipecycle);
             }
             CollectionKit.clear(ordset);
