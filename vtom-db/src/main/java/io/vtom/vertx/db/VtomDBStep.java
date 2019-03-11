@@ -19,7 +19,7 @@ public class VtomDBStep implements PipeStep<TSql> {
 
   private Pipeline pipeline;
   private JDBCClient client;
-  private List<StepWrapper<TSql>> wrappers;
+  private List<StepWrapper<? extends TSql>> wrappers;
   private Kv shared;
   private boolean tx;
 
@@ -38,8 +38,8 @@ public class VtomDBStep implements PipeStep<TSql> {
   }
 
   @Override
-  public VtomDBStep step(Step<TSql> step) {
-    StepWrapper<TSql> wrapper = step._wrapper();
+  public VtomDBStep step(Step<? extends TSql> step) {
+    StepWrapper<? extends TSql> wrapper = step._wrapper();
     if (this.wrappers == null)
       this.wrappers = new ArrayList<>();
     this.wrappers.add(wrapper);
@@ -62,7 +62,7 @@ public class VtomDBStep implements PipeStep<TSql> {
     return this.pipeline;
   }
 
-  private PipeRunnable<TSql, VTSout> piperunable(StepWrapper<TSql> wrapper) {
+  private PipeRunnable<TSql, VTSout> piperunable(StepWrapper<? extends TSql> wrapper) {
     return new VtomDBPipeRunnable(this.pipeline, this.client, wrapper, this.shared);
   }
 

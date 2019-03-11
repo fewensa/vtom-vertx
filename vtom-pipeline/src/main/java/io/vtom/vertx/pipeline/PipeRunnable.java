@@ -8,7 +8,7 @@ import io.vtom.vertx.pipeline.step.StepWrapper;
 
 public interface PipeRunnable<I extends StepIN, O extends StepOUT> {
 
-  StepWrapper<I> wrapper();
+  StepWrapper<? extends I> wrapper();
 
   void call(O stepout, Handler<AsyncResult<Object>> handler);
 

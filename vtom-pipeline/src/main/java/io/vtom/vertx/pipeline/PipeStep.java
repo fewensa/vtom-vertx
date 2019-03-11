@@ -11,7 +11,7 @@ public interface PipeStep<T extends StepIN> {
     return this.step(Step.with(stepstack));
   }
 
-  PipeStep<T> step(Step<T> step);
+  PipeStep<T> step(Step<? extends T> step);
 
   default Pipeline join() {
     return this.join(UUIDKit.next(false));

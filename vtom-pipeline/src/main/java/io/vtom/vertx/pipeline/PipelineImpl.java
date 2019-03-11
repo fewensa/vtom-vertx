@@ -155,7 +155,6 @@ class PipelineImpl implements Pipeline {
     StepWrapper wrapper = piperunnable.wrapper();
     StepOUT out = wrapper.stepstack().stepin(this.pipecycle).out(wrapper);
 
-
     // if parallel run, not wait step promise.
     if (wrapper.ord() <= 0) {
       this.runnableCall(piperunnable, out,
@@ -205,99 +204,6 @@ class PipelineImpl implements Pipeline {
         }));
 
   }
-
-//  private void callv2(EPDoneArgPromiseBuilder<PipeLifecycle> endpromise, int ix, PipePromise steppromise) {
-//
-//    // if pipeline status is STOP, end call
-//    if (this.stat == Stat.STOP) {
-//      this.stat = Stat.END;
-//
-//      if (!this.alwayscalled.get())
-//        Promise.builder().handler().handleAlways(endpromise);
-//      this.alwayscalled.set(Boolean.TRUE);
-//      return;
-//    }
-//
-//    // last of piperunnable, end call
-//    if (ix == this.piperunnables.size()) {
-//      this.stat = Stat.END;
-//
-//      steppromise.done(pipecycle -> this.release(ix - 1, true,
-//        () -> Promise.builder().handler().handleDoneArg(endpromise, this.pipecycle),
-//        thr -> this.captureCall(endpromise, thr)));
-//
-//      steppromise.capture(thr -> this.release(ix - 1, false,
-//        () -> this.captureCall(endpromise, thr),
-//        rth -> {
-//          rth.addSuppressed(thr);
-//          this.captureCall(endpromise, rth);
-//        }));
-//
-//      return;
-//    }
-//
-//    PipeRunnable piperunnable = this.piperunnables.get(ix);
-//    StepWrapper wrapper = piperunnable.wrapper();
-//
-//
-//    // if parallel run, not wait step promise.
-//    if (wrapper.ord() <= 0) {
-//      StepOUT out = wrapper.stepstack().stepin(this.pipecycle).out(wrapper);
-//      PipePromise parallelpromise = piperunnable.call(out);
-//
-//      // All pipeline are parallel pipeline, return last step pipeline promise
-//      boolean allparallel = ix + 1 == this.piperunnables.size() && steppromise == null;
-//      if (!allparallel) {
-//        parallelpromise.done(pipecycle -> this.release(ix, true,
-//          () -> {
-//          },
-//          thr -> {
-//            this.stat = Stat.STOP;
-//            this.captureCall(endpromise, thr);
-//          }));
-//
-//        parallelpromise.capture(thr -> {
-//          this.stat = Stat.STOP;
-//          this.release(ix, false,
-//            () -> this.captureCall(endpromise, thr),
-//            rth -> {
-//              rth.addSuppressed(thr);
-//              this.captureCall(endpromise, rth);
-//            });
-//        });
-//      }
-//
-//      this.callv2(endpromise, ix + 1, allparallel ? parallelpromise : steppromise);
-//      return;
-//    }
-//
-//
-//    // first serial run
-//    if (steppromise == null) {
-//      StepOUT out = wrapper.stepstack().stepin(this.pipecycle).out(wrapper);
-//      steppromise = piperunnable.call(out);
-//      this.callv2(endpromise, ix + 1, steppromise);
-//      return;
-//    }
-//
-//    // serial run, wait step promise.
-//    steppromise.done(pipecycle -> this.release(ix, true,
-//      () -> {
-//        StepOUT out = wrapper.stepstack().stepin(this.pipecycle).out(wrapper);
-//        PipePromise serialpromise = piperunnable.call(out);
-//        this.callv2(endpromise, ix + 1, serialpromise);
-//      },
-//      thr -> this.captureCall(endpromise, thr)));
-//
-//    steppromise.capture(thr -> this.release(ix, false,
-//      () -> this.captureCall(endpromise, thr),
-//      rth -> {
-//        rth.addSuppressed(thr);
-//        this.captureCall(endpromise, rth);
-//      }));
-//
-//  }
-
 
   private void captureCall(EPDoneArgPromiseBuilder<PipeLifecycle> endpromise, Throwable thr) {
     endpromise.captures().forEach(capture -> capture.execute(thr));

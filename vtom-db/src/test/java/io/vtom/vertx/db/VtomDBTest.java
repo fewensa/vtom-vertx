@@ -8,6 +8,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestOptions;
 import io.vertx.ext.unit.TestSuite;
 import io.vertx.ext.unit.report.ReportOptions;
+import io.vtom.vertx.db.sql.SqlAction;
 import io.vtom.vertx.db.sql.TSql;
 import io.vtom.vertx.pipeline.scope.Scope;
 import io.vtom.vertx.pipeline.step.Step;
@@ -51,12 +52,12 @@ public class VtomDBTest {
         .tx()
         .step(Step.with(cycle -> {
           System.out.println(11111);
-          return TSql.create(TSql.Action.SELECT, "select * from t_media");
+          return TSql.def(SqlAction.SELECT).sql("select * from t_media");
         }).ord(0).after(1))
         .step(Step.with(cycle -> {
           System.out.println(2222);
           Scope scope = cycle.scope();
-          return TSql.create(TSql.Action.SELECT, "select * from t_tags where mid in ('1')");
+          return TSql.def(SqlAction.SELECT).sql("select * from t_tags where mid in ('1')");
         }).ord(0))
         .join()
         .enqueue()

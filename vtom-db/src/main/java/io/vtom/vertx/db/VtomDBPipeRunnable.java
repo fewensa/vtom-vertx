@@ -21,10 +21,10 @@ class VtomDBPipeRunnable implements PipeRunnable<TSql, VTSout> {
 
   private Pipeline pipeline;
   private JDBCClient client;
-  private StepWrapper<TSql> wrapper;
+  private StepWrapper<? extends TSql> wrapper;
   private Kv shared;
 
-  VtomDBPipeRunnable(Pipeline pipeline, JDBCClient client, StepWrapper<TSql> wrapper, Kv shared) {
+  VtomDBPipeRunnable(Pipeline pipeline, JDBCClient client, StepWrapper<? extends TSql> wrapper, Kv shared) {
     this.pipeline = pipeline;
     this.client = client;
     this.wrapper = wrapper;
@@ -32,7 +32,7 @@ class VtomDBPipeRunnable implements PipeRunnable<TSql, VTSout> {
   }
 
   @Override
-  public StepWrapper<TSql> wrapper() {
+  public StepWrapper<? extends TSql> wrapper() {
     return this.wrapper;
   }
 
