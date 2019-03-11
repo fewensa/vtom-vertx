@@ -5,6 +5,7 @@ import io.enoa.toolkit.value.EnoaValue;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class Scope implements Serializable {
@@ -16,7 +17,7 @@ public class Scope implements Serializable {
 
   Scope(ScopeContext context) {
     this.context = context;
-    this.danger = Kv.create();
+    this.danger = Kv.create(new ConcurrentHashMap<>());
   }
 
   public static ScopeContext context() {
@@ -50,7 +51,7 @@ public class Scope implements Serializable {
   }
 
   public Kv danger(String key) {
-    return (Kv) this.danger.computeIfAbsent(key, k -> Kv.create());
+    return (Kv) this.danger.computeIfAbsent(key, k -> Kv.create(new ConcurrentHashMap<>()));
   }
 
   public void clear() {

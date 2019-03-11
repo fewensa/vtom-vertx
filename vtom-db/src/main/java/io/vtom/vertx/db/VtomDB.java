@@ -18,6 +18,11 @@ public class VtomDB implements PipeComponent<TSql> {
   }
 
   @Override
+  public VtomDBStep component() {
+    return this.dependency(Pipeline.pipeline());
+  }
+
+  @Override
   public VtomDBStep dependency(Pipeline pipeline) {
     return new VtomDBStep(pipeline, this.client);
   }

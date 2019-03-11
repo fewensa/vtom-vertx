@@ -9,7 +9,6 @@ import io.vertx.ext.unit.TestOptions;
 import io.vertx.ext.unit.TestSuite;
 import io.vertx.ext.unit.report.ReportOptions;
 import io.vtom.vertx.db.sql.TSql;
-import io.vtom.vertx.pipeline.Pipeline;
 import io.vtom.vertx.pipeline.scope.Scope;
 import io.vtom.vertx.pipeline.step.Step;
 import org.junit.Before;
@@ -48,26 +47,22 @@ public class VtomDBTest {
     this.suite.test("ord", ctx -> {
       Async async = ctx.async();
 
-      Pipeline pipeline = Pipeline.pipeline(Scope.context());
-
-      this.vtomdb.dependency(pipeline)
+      this.vtomdb.component()
         .tx()
         .step(Step.with(cycle -> {
           System.out.println(11111);
           return TSql.create(TSql.Action.SELECT, "select * from t_media");
-        }).ord(1).after(1))
+        }).ord(0).after(1))
         .step(Step.with(cycle -> {
           System.out.println(2222);
           Scope scope = cycle.scope();
           return TSql.create(TSql.Action.SELECT, "select * from t_tags where mid in ('1')");
-        }).ord(2))
+        }).ord(0))
         .join()
         .enqueue()
         .done(cycle -> {
-          this.vertx.setTimer(3000, id -> {
-            Scope scope = cycle.scope();
-            System.out.println(scope);
-          });
+          Scope scope = cycle.scope();
+          System.out.println(scope);
         })
         .capture(Throwable::printStackTrace)
         .always(() -> {
@@ -78,7 +73,7 @@ public class VtomDBTest {
       async.awaitSuccess();
 
       try {
-        TimeUnit.SECONDS.sleep(20L);
+        TimeUnit.SECONDS.sleep(5L);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }

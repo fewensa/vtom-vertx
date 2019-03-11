@@ -1,21 +1,18 @@
 package io.vtom.vertx.db;
 
-import io.enoa.promise.Promise;
-import io.enoa.promise.builder.EPDoneArgPromiseBuilder;
 import io.enoa.toolkit.collection.CollectionKit;
 import io.enoa.toolkit.map.Kv;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.ext.jdbc.JDBCClient;
+import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
+import io.vertx.ext.sql.UpdateResult;
 import io.vtom.vertx.db.sql.TSql;
 import io.vtom.vertx.db.sql.VTSout;
-import io.vtom.vertx.pipeline.PipeLifecycle;
-import io.vtom.vertx.pipeline.PipePromise;
 import io.vtom.vertx.pipeline.PipeRunnable;
 import io.vtom.vertx.pipeline.Pipeline;
-import io.vtom.vertx.pipeline.scope.ScopeContext;
 import io.vtom.vertx.pipeline.step.StepWrapper;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,41 +37,34 @@ class VtomDBPipeRunnable implements PipeRunnable<TSql, VTSout> {
   }
 
   @Override
-  public PipePromise call(VTSout stepout) {
-    EPDoneArgPromiseBuilder<PipeLifecycle> promise = Promise.builder().donearg();
-    PipePromise _ret = new PipePromise(promise.build());
-
+  public void call(VTSout stepout, Handler<AsyncResult<Object>> handler) {
     SQLConnection holderconn = this.shared.as("conn");
     if (holderconn != null) {
-      this.vrun(promise, holderconn, stepout);
-      return _ret;
+      this.vrun2(holderconn, stepout, handler);
+      return;
     }
-
     this.client.getConnection(ar -> {
       if (ar.failed()) {
-        Promise.builder().handler().handleCapture(promise, ar.cause());
+        handler.handle(Future.failedFuture(ar.cause()));
         return;
       }
-
       SQLConnection conn = ar.result();
       this.shared.set("conn", conn);
 
       Boolean tx = this.shared.bool("tx", Boolean.FALSE);
       if (!tx) {
-        this.vrun(promise, conn, stepout);
+        this.vrun2(conn, stepout, handler);
         return;
       }
-
       conn.setAutoCommit(false, acr -> {
         if (acr.failed()) {
-          Promise.builder().handler().handleCapture(promise, acr.cause());
+          handler.handle(Future.failedFuture(acr.cause()));
           return;
         }
-        this.vrun(promise, conn, stepout);
+        this.vrun2(conn, stepout, handler);
       });
-
     });
-    return _ret;
+
   }
 
   @Override
@@ -119,60 +109,33 @@ class VtomDBPipeRunnable implements PipeRunnable<TSql, VTSout> {
     CollectionKit.clear(this.shared);
   }
 
-  private void vrun(EPDoneArgPromiseBuilder<PipeLifecycle> promise, SQLConnection conn, VTSout output) {
+  private void vrun2(SQLConnection conn, VTSout output, Handler<AsyncResult<Object>> handler) {
     switch (output.action()) {
       case CALL:
-//        conn.callWithParams(arg.sql(), arg.paras(), ar -> {
-//          if (ar.failed()) {
-//            promise.captures().forEach(capture -> capture.execute(ar.cause()));
-//            return;
-//          }
-//          promise.dones().forEach(done -> done.execute(ar.result()));
-//        });
+//        conn.ca
         break;
       case UPDATE:
-        conn.updateWithParams(output.sql(), output.paras(), this.conncall(promise, output));
+        conn.updateWithParams(output.sql(), output.paras(), ar -> {
+          if (ar.failed()) {
+            handler.handle(Future.failedFuture(ar.cause()));
+            return;
+          }
+          UpdateResult result = ar.result();
+          handler.handle(Future.succeededFuture(result));
+        });
         break;
       case SELECT:
-        conn.queryWithParams(output.sql(), output.paras(), this.conncall(promise, output));
+        conn.queryWithParams(output.sql(), output.paras(), ar -> {
+          if (ar.failed()) {
+            handler.handle(Future.failedFuture(ar.cause()));
+            return;
+          }
+          ResultSet result = ar.result();
+          System.out.println(result + " - " + System.nanoTime());
+          handler.handle(Future.succeededFuture(result));
+        });
         break;
-//      default:
-//        Promise.builder().handler().handleCapture(promise, new NoStackTraceThrowable(EnoaTipKit.message("eo.tip.vtom.db.not_support_action")));
-//        break;
     }
   }
-
-  private <T> Handler<AsyncResult<T>> conncall(EPDoneArgPromiseBuilder<PipeLifecycle> promise, VTSout output) {
-    return ar -> {
-      if (ar.failed()) {
-        Promise.builder().handler().handleCapture(promise, ar.cause());
-        return;
-      }
-
-      T result = ar.result();
-
-      System.out.println(result + " - " + System.nanoTime());
-      PipeLifecycle cycle = this.pipeline.cycle();
-
-      ScopeContext.context(cycle.scope()).put(output, result);
-
-      promise.dones().forEach(done -> done.execute(cycle));
-      if (promise.always() != null)
-        promise.always().execute();
-    };
-  }
-
-//  private Handler<AsyncResult<Void>> txcall(EPDoneArgPromiseBuilder<PipeLifecycle> promise) {
-//    return ar -> {
-//      CollectionKit.clear(this.shared);
-//
-//      if (ar.failed()) {
-//        Promise.builder().handler().handleCapture(promise, ar.cause());
-//        return;
-//      }
-//      Promise.builder().handler().handleDoneArg(promise, this.pipeline.cycle());
-//    };
-//  }
-
 
 }

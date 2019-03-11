@@ -1,6 +1,5 @@
 package io.vtom.vertx.pipeline;
 
-import io.vertx.core.Vertx;
 import io.vtom.vertx.pipeline.scope.Scope;
 import io.vtom.vertx.pipeline.scope.ScopeContext;
 import io.vtom.vertx.pipeline.step.StepIN;

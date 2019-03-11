@@ -10,7 +10,7 @@ public interface PipeRunnable<I extends StepIN, O extends StepOUT> {
 
   StepWrapper<I> wrapper();
 
-  PipePromise call(O stepout);
+  void call(O stepout, Handler<AsyncResult<Object>> handler);
 
   void release(boolean ok, Handler<AsyncResult<Void>> handler);
 
