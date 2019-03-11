@@ -5,22 +5,22 @@ import io.enoa.promise.arg.PromiseArg;
 import io.enoa.promise.arg.PromiseCapture;
 import io.enoa.promise.arg.PromiseVoid;
 
-public class Pipepromise implements DoneArgPromise<Pipecycle> {
+public class PipePromise implements DoneArgPromise<PipeLifecycle> {
 
-  private DoneArgPromise<Pipecycle> promise;
+  private DoneArgPromise<PipeLifecycle> promise;
 
-  public Pipepromise(DoneArgPromise<Pipecycle> promise) {
+  public PipePromise(DoneArgPromise<PipeLifecycle> promise) {
     this.promise = promise;
   }
 
   @Override
-  public Pipepromise done(PromiseArg<Pipecycle> done) {
+  public PipePromise done(PromiseArg<PipeLifecycle> done) {
     this.promise.done(done);
     return this;
   }
 
   @Override
-  public Pipepromise capture(PromiseCapture capture) {
+  public PipePromise capture(PromiseCapture capture) {
     this.promise.capture(capture);
     return this;
   }

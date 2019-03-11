@@ -1,5 +1,6 @@
 package io.vtom.vertx.pipeline.scope;
 
+import io.enoa.toolkit.map.Kv;
 import io.enoa.toolkit.value.EnoaValue;
 
 import java.io.Serializable;
@@ -10,8 +11,12 @@ public class Scope implements Serializable {
 
   ScopeContext context;
 
+  private Kv danger;
+
+
   Scope(ScopeContext context) {
     this.context = context;
+    this.danger = Kv.create();
   }
 
   public static ScopeContext context() {
@@ -44,19 +49,13 @@ public class Scope implements Serializable {
       .collect(Collectors.toList());
   }
 
-//  public List<Object> origins() {
-//    List<Object> values = this.context.varord().get(0);
-//    return values == null ? Collections.emptyList() : values;
-//  }
-//
-//  public List<EnoaValue> values(Integer id) {
-//    return this.origins(id).stream()
-//      .map(EnoaValue::with)
-//      .collect(Collectors.toList());
-//  }
+  public Kv danger(String key) {
+    return (Kv) this.danger.computeIfAbsent(key, k -> Kv.create());
+  }
 
   public void clear() {
     this.context.clear();
+    this.danger.clear();
   }
 
   @Override

@@ -1,9 +1,9 @@
 package io.vtom.vertx.pipeline.step;
 
-import io.vtom.vertx.pipeline.Pipecycle;
+import io.vtom.vertx.pipeline.PipeLifecycle;
 
 public interface Stepstack<T extends StepIN> {
 
-  T stepin(Pipecycle pipecycle);
+  T stepin(PipeLifecycle pipecycle);
 
 }

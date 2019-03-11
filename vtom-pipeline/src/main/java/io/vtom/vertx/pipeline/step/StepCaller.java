@@ -1,9 +1,9 @@
 package io.vtom.vertx.pipeline.step;
 
-import io.vtom.vertx.pipeline.Pipepromise;
+import io.vtom.vertx.pipeline.PipePromise;
 
 public interface StepCaller {
 
-  Pipepromise call();
+  PipePromise call();
 
 }

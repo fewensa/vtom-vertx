@@ -15,9 +15,6 @@ import io.vtom.vertx.pipeline.step.Step;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class VtomDBTest {
@@ -51,22 +48,26 @@ public class VtomDBTest {
     this.suite.test("ord", ctx -> {
       Async async = ctx.async();
 
-      Pipeline pipeline = Pipeline.pipeline(this.vertx, Scope.context());
+      Pipeline pipeline = Pipeline.pipeline(Scope.context());
 
       this.vtomdb.dependency(pipeline)
+        .tx()
         .step(Step.with(cycle -> {
           System.out.println(11111);
           return TSql.create(TSql.Action.SELECT, "select * from t_media");
-        }).ord(0).after(1))
+        }).ord(1).after(1))
         .step(Step.with(cycle -> {
           System.out.println(2222);
+          Scope scope = cycle.scope();
           return TSql.create(TSql.Action.SELECT, "select * from t_tags where mid in ('1')");
-        }).ord(10))
+        }).ord(2))
         .join()
         .enqueue()
         .done(cycle -> {
-          Scope scope = cycle.scope();
-          System.out.println(scope);
+          this.vertx.setTimer(3000, id -> {
+            Scope scope = cycle.scope();
+            System.out.println(scope);
+          });
         })
         .capture(Throwable::printStackTrace)
         .always(() -> {
@@ -77,7 +78,7 @@ public class VtomDBTest {
       async.awaitSuccess();
 
       try {
-        TimeUnit.SECONDS.sleep(5L);
+        TimeUnit.SECONDS.sleep(20L);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
@@ -85,21 +86,5 @@ public class VtomDBTest {
     }).run(new TestOptions().addReporter(new ReportOptions().setTo("console")));
   }
 
-  @Test
-  public void testList() {
-    List<String> arr = new ArrayList<String>() {{
-      add("A");
-      add("B");
-      add("C");
-      add("D");
-    }};
-
-    System.out.println(arr);
-//    Collections.swap(arr, 0, 3);
-//    System.out.println(arr);
-
-    Collections.rotate(arr.subList(1, 3), -1);
-    System.out.println(arr);
-  }
 
 }

@@ -1,20 +1,20 @@
 package io.vtom.vertx.pipeline;
 
-import io.vertx.core.Vertx;
+import io.enoa.toolkit.map.Kv;
 import io.vtom.vertx.pipeline.scope.Scope;
 
-public class Pipecycle {
+public class PipeLifecycle {
 
-  private final Vertx vertx;
+  private final Kv mount;
   private final Scope scope;
 
-  Pipecycle(Vertx vertx, Scope scope) {
-    this.vertx = vertx;
+  PipeLifecycle(Scope scope) {
+    this.mount = Kv.create();
     this.scope = scope;
   }
 
-  public Vertx vertx() {
-    return this.vertx;
+  public Kv mount() {
+    return this.mount;
   }
 
   public Scope scope() {
