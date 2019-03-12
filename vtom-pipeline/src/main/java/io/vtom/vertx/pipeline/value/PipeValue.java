@@ -1,5 +1,7 @@
 package io.vtom.vertx.pipeline.value;
 
+import io.enoa.toolkit.convert.IConverter;
+
 public class PipeValue {
 
   private Object value;
@@ -28,10 +30,6 @@ public class PipeValue {
     return (T) this.value;
   }
 
-//  public <R, P> R to(IConverter<R, P> converter) {
-//    return converter.convert(this.as());
-//  }
-
   public boolean isNull() {
     return this.value == null;
   }
@@ -40,5 +38,8 @@ public class PipeValue {
     return !this.isNull();
   }
 
+  public <R, P> R to(IConverter<R, P> converter) {
+    return converter.convert(this.as());
+  }
 
 }

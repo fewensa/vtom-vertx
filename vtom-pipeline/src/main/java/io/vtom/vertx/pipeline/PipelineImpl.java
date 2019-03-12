@@ -129,7 +129,11 @@ class PipelineImpl implements Pipeline {
       Object value = ar.result();
       successHandler.execute(value);
     };
-    runnable.call(stepout, handler);
+    try {
+      runnable.call(stepout, handler);
+    } catch (Exception e) {
+      failHandler.execute(e);
+    }
   }
 
   private void callv3(EPDoneArgPromiseBuilder<PipeLifecycle> endpromise, int ix) {
@@ -150,7 +154,6 @@ class PipelineImpl implements Pipeline {
       return;
     }
 
-
     PipeRunnable piperunnable = this.piperunnables.get(ix);
     StepWrapper wrapper = piperunnable.wrapper();
     StepOUT out = wrapper.stepstack().stepin(this.pipecycle).out(wrapper);
@@ -160,8 +163,10 @@ class PipelineImpl implements Pipeline {
       this.runnableCall(piperunnable, out,
         value -> this.release(ix, true,
           () -> {
+            ScopeContext.context(this.pipecycle.scope()).put(out, value);
+            // parallel pipeline, should not set last step id
+
             if (ix + 1 < this.piperunnables.size()) {
-              ScopeContext.context(this.pipecycle.scope()).put(out, value);
               return;
             }
 
@@ -193,6 +198,8 @@ class PipelineImpl implements Pipeline {
       value -> this.release(ix, true,
         () -> {
           ScopeContext.context(this.pipecycle.scope()).put(out, value);
+          ScopeContext.context(this.pipecycle.scope()).last(out.id());
+
           this.callv3(endpromise, ix + 1);
         },
         thr1 -> this.captureCall(endpromise, thr1)),

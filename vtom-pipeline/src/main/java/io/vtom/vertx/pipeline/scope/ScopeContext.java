@@ -13,6 +13,7 @@ public class ScopeContext {
   private Kv varid;
   private Map<Integer, Object> varord;
   private List<Object> varparallels;
+  private String lastId;
 
   ScopeContext() {
     this.varid = Kv.create();
@@ -38,13 +39,14 @@ public class ScopeContext {
     return this;
   }
 
-//  public ScopeContext put(Integer id, Object value) {
-////    List<Object> vals = this.varord.computeIfAbsent(id, k -> new ArrayList<>());
-////    vals.add(value);
-////    return this;
-//    this.varord.put(id, value);
-//    return this;
-//  }
+  public ScopeContext last(String lastId) {
+    this.lastId = lastId;
+    return this;
+  }
+
+  Object last() {
+    return this.varid.get(this.lastId);
+  }
 
   Kv varid() {
     return this.varid;

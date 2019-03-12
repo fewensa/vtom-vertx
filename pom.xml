@@ -12,6 +12,7 @@
   <modules>
     <module>vtom-pipeline</module>
     <module>vtom-db</module>
+    <module>vtom-test</module>
   </modules>
 
 
@@ -68,6 +69,12 @@
       <dependency>
         <groupId>io.vtom</groupId>
         <artifactId>vtom-pipeline</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.vtom</groupId>
+        <artifactId>vtom-db</artifactId>
         <version>${project.version}</version>
       </dependency>
 
@@ -160,6 +167,18 @@
       <dependency>
         <groupId>io.enoa</groupId>
         <artifactId>enoa-promise</artifactId>
+        <version>${version-enoa}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.enoa</groupId>
+        <artifactId>stove-firetpl</artifactId>
+        <version>${version-enoa}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.enoa</groupId>
+        <artifactId>stove-firetpl-enjoy</artifactId>
         <version>${version-enoa}</version>
       </dependency>
 

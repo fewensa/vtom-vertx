@@ -1,7 +1,6 @@
 package io.vtom.vertx.pipeline.scope;
 
 import io.enoa.toolkit.map.Kv;
-import io.enoa.toolkit.value.EnoaValue;
 import io.vtom.vertx.pipeline.value.PipeValue;
 
 import java.io.Serializable;
@@ -25,12 +24,16 @@ public class Scope implements Serializable {
     return new ScopeContext();
   }
 
+  public PipeValue last() {
+    return PipeValue.with(this.context.last());
+  }
+
   public PipeValue value(String id) {
     return PipeValue.with(this.context.varid().get(id));
   }
 
-  public PipeValue value(Integer id) {
-    return PipeValue.with(this.context.varord().get(id));
+  public PipeValue value(Integer ord) {
+    return PipeValue.with(this.context.varord().get(ord));
   }
 
   public List<PipeValue> parallelValues() {

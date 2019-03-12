@@ -1,5 +1,7 @@
-package io.vtom.vertx.db.sql.dsql;
+package io.vtom.vertx.db.sql.template;
 
+import io.enoa.firetpl.FireBody;
+import io.enoa.toolkit.map.Kv;
 import io.vertx.core.json.JsonArray;
 import io.vtom.vertx.db.dialect.IDialect;
 import io.vtom.vertx.db.sql.*;
@@ -8,65 +10,86 @@ import io.vtom.vertx.db.sql.reporter.ISqlReporter;
 import io.vtom.vertx.pipeline.step.StepIN;
 import io.vtom.vertx.pipeline.step.StepWrapper;
 
-public class DSql extends AbstractTSql<DSql> {
+
+public class TplSql extends AbstractTSql<TplSql> {
 
 
   private TSqlOptions options;
 
   private SqlAction action;
+  private String sqlname;
+  private Kv parakv;
   private IPSql ipsql;
   private int ps;
   private int pn;
   private boolean pageSelect;
-  private String sql;
 
-  protected DSql(String cfgname) {
+  private TplSql(String cfgname) {
     this.options = TSql.epm().options(cfgname);
   }
 
-  static DSql with(String cfgname) {
-    return new DSql(cfgname);
+  static TplSql with(String cfgname) {
+    return new TplSql(cfgname);
   }
 
 
-  protected DSql action(SqlAction action) {
+  TplSql action(SqlAction action) {
     this.action = action;
     return this;
   }
 
-  protected DSql ipsql(IPSql ipsql) {
+  TplSql sqlname(String sqlname) {
+    this.sqlname = sqlname;
+    return this;
+  }
+
+  TplSql ipsql(IPSql ipsql) {
     this.ipsql = ipsql;
     return this;
   }
 
-  protected DSql ps(int ps) {
+  TplSql ps(int ps) {
     this.ps = ps;
     return this;
   }
 
-  protected DSql pn(int pn) {
+  TplSql pn(int pn) {
     this.pn = pn;
     return this;
   }
 
-  protected DSql pageSelect() {
+  TplSql pageSelect() {
     return this.pageSelect(Boolean.TRUE);
   }
 
-  protected DSql pageSelect(boolean pageSelect) {
+  TplSql pageSelect(boolean pageSelect) {
     this.pageSelect = pageSelect;
     return this;
   }
 
-  protected DSql sql(String sql) {
-    this.sql = sql;
+
+  public TplSql para(Kv kv) {
+    this.parakv = kv;
     return this;
   }
 
-
   @Override
   public <I extends StepIN> VTSout out(StepWrapper<I> wrapper) {
-    JsonArray paras = super.paras();
+    FireBody firebody = this.options.getFiretpl().render(this.sqlname, this.parakv);
+    Object[] fireparas = firebody.paras();
+    JsonArray paja = super.paras();
+    if (paja == null) {
+      paja = new JsonArray();
+      for (Object firepara : fireparas) {
+        if (firepara == null) {
+          paja.addNull();
+          continue;
+        }
+        paja.add(firepara);
+      }
+    }
+
+    final JsonArray _paras = paja;
     return new AbstractVTSout(wrapper) {
       @Override
       public IDialect dialect() {
@@ -80,12 +103,12 @@ public class DSql extends AbstractTSql<DSql> {
 
       @Override
       public String sql() {
-        return sql;
+        return firebody.tpl();
       }
 
       @Override
       public JsonArray paras() {
-        return paras;
+        return _paras;
       }
 
       @Override
