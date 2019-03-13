@@ -12,15 +12,17 @@ import static java.time.format.DateTimeFormatter.ISO_INSTANT;
 
 public class RowValue extends EnoaValue {
 
-  private Object value;
 
   protected RowValue(Object value) {
     super(value);
   }
 
+  public static RowValue with(Object value) {
+    return new RowValue(value);
+  }
 
   public Instant instant(Instant def) {
-    String value = ConvertKit.string(this.value);
+    String value = ConvertKit.string(super.origin());
     if (TextKit.blanky(value))
       return def;
     return Instant.from(ISO_INSTANT.parse(value));

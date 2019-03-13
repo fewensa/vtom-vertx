@@ -1,23 +1,36 @@
 package io.vtom.vertx.db.data;
 
-import io.enoa.toolkit.map.FastKv;
+import io.enoa.toolkit.map.EoMap;
 import io.vertx.core.json.JsonObject;
 
 import java.time.Instant;
-import java.util.HashMap;
+import java.util.Map;
 
-public class Row extends HashMap<String, Object> implements FastKv {
+public class Row implements EoMap<Row> {
 
   private JsonObject jo;
 
-  Row(JsonObject jo) {
-    super(jo.getMap());
+  public static Row create(JsonObject jo) {
+    return new Row(jo);
+  }
+
+  public Row(JsonObject jo) {
     this.jo = jo;
   }
 
   @Override
+  public Map<String, Object> map() {
+    return this.jo.getMap();
+  }
+
+  @Override
+  public Object get(Object key) {
+    return this.map().get(key);
+  }
+
+  @Override
   public Object origin(String key) {
-    return this.jo.getValue(key);
+    return this.get(key);
   }
 
   @Override
@@ -35,22 +48,16 @@ public class Row extends HashMap<String, Object> implements FastKv {
 
   @Override
   public RowValue value(String key) {
-    return new RowValue(this.origin(key));
+    return RowValue.with(this.origin(key));
   }
 
   public Row set(String key, Object value) {
-    super.put(key, value);
-    if (value == null) {
-      this.jo.putNull(key);
-      return this;
-    }
-    this.jo.put(key, value);
+    this.put(key, value);
     return this;
   }
 
   @Override
   public void clear() {
-    super.clear();
     this.jo.clear();
   }
 }

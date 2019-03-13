@@ -136,6 +136,25 @@ class PipelineImpl implements Pipeline {
     }
   }
 
+
+  private void handleDone(EPDoneArgPromiseBuilder<PipeLifecycle> endpromise) {
+    for (PromiseArg<PipeLifecycle> done : endpromise.dones()) {
+      try {
+        done.execute(this.pipecycle);
+      } catch (Exception e) {
+        for (PromiseCapture capture : endpromise.captures()) {
+          try {
+            capture.execute(e);
+          } catch (Exception ex) {
+            ex.printStackTrace();
+            break;
+          }
+        }
+        break;
+      }
+    }
+  }
+
   private void callv3(EPDoneArgPromiseBuilder<PipeLifecycle> endpromise, int ix) {
 
     // if pipeline status is STOP, end call
@@ -150,7 +169,10 @@ class PipelineImpl implements Pipeline {
 
     // last of piperunnable, end call
     if (ix == this.piperunnables.size()) {
-      Promise.builder().handler().handleDoneArg(endpromise, this.pipecycle);
+      this.handleDone(endpromise);
+      if (!this.alwayscalled.get())
+        Promise.builder().handler().handleAlways(endpromise);
+      this.alwayscalled.set(Boolean.TRUE);
       return;
     }
 
@@ -175,7 +197,10 @@ class PipelineImpl implements Pipeline {
               .collect(Collectors.toSet());
             // all pipeline are parallel pipeline, last pipeline call promise done.
             if (ordset.size() == 0) {
-              Promise.builder().handler().handleDoneArg(endpromise, this.pipecycle);
+              this.handleDone(endpromise);
+              if (!this.alwayscalled.get())
+                Promise.builder().handler().handleAlways(endpromise);
+              this.alwayscalled.set(Boolean.TRUE);
             }
             CollectionKit.clear(ordset);
           },

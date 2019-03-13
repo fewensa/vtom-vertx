@@ -15,14 +15,10 @@
  */
 package io.vtom.vertx.db.page;
 
-import io.enoa.toolkit.convert.IConverter;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.sql.ResultSet;
-
 import java.io.Serializable;
 import java.util.List;
 
-public class Page<T> implements Serializable, IConverter<Page<JsonObject>, Page<ResultSet>> {
+public class Page<T> implements Serializable {
 
   private int pn;
   private int ps;
@@ -32,6 +28,7 @@ public class Page<T> implements Serializable, IConverter<Page<JsonObject>, Page<
   // total rows
   private long trw;
   private List<T> rows;
+  private List<String> columns;
 
   public static <J> Page<J> converter() {
     return new Page<>();
@@ -40,7 +37,7 @@ public class Page<T> implements Serializable, IConverter<Page<JsonObject>, Page<
   public Page() {
   }
 
-  public Page(int pageNumber, int pageSize, int totalPage, long offset, long totalRow, List<T> rows) {
+  public Page(int pageNumber, int pageSize, int totalPage, long offset, long totalRow, List<String> columns, List<T> rows) {
     this.pn = pageNumber;
     this.ps = pageSize;
     this.tpg = totalPage;
@@ -103,6 +100,15 @@ public class Page<T> implements Serializable, IConverter<Page<JsonObject>, Page<
     return this;
   }
 
+  public List<String> getColumns() {
+    return columns;
+  }
+
+  public Page<T> setColumns(List<String> columns) {
+    this.columns = columns;
+    return this;
+  }
+
   @Override
   public String toString() {
     return "Page{" +
@@ -113,19 +119,6 @@ public class Page<T> implements Serializable, IConverter<Page<JsonObject>, Page<
       ", trw=" + trw +
       ", rows=" + rows +
       '}';
-  }
-
-  @Override
-  public Page<JsonObject> convert(Page<ResultSet> page) {
-    this.pn = page.pn;
-    this.ps = page.ps;
-    this.tpg = page.tpg;
-    this.offset = page.offset;
-    this.trw = page.trw;
-    List<ResultSet> rows = page.rows;
-    ResultSet rs = rows.get(0);
-    this.rows = (List<T>) rs.getRows();
-    return (Page<JsonObject>) this;
   }
 
 }

@@ -2,19 +2,16 @@ package io.vtom.vertx.test.db;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import io.enoa.stove.firetpl.enjoy.EnjoyFiretpl;
-import io.enoa.toolkit.map.Kv;
 import io.enoa.toolkit.path.PathKit;
 import io.enoa.toolkit.prop.PropKit;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
-import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestOptions;
 import io.vertx.ext.unit.TestSuite;
 import io.vertx.ext.unit.report.ReportOptions;
 import io.vtom.vertx.db.VtomDB;
+import io.vtom.vertx.db.data.DBConverter;
 import io.vtom.vertx.db.data.Row;
 import io.vtom.vertx.db.data.Table;
 import io.vtom.vertx.db.dialect.PostgreSQLDialect;
@@ -108,11 +105,13 @@ public class VtomDBTest {
         .enqueue()
         .done(cycle -> {
           Scope scope = cycle.scope();
-          Table table = scope.value(2).to(Table.create());
+          Table table = scope.value(2).to(DBConverter.toTable());
           List<Row> rows = table.rows();
-          rows.get(0).set("a",22);
+          Row row = rows.get(0);
+          row.set("aa", "22");
 
-          Page<JsonObject> page = scope.value(1).to(Page.converter());
+          Page<Row> page = scope.value(1).to(DBConverter.toPageRow());
+
 
           System.out.println("DONE");
         })

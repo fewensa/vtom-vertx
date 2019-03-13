@@ -6,7 +6,7 @@ public class PipeValue {
 
   private Object value;
 
-  private PipeValue(Object value) {
+  protected PipeValue(Object value) {
     this.value = value;
   }
 

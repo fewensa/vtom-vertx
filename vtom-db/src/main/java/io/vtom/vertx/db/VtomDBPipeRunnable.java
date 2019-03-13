@@ -180,7 +180,7 @@ class VtomDBPipeRunnable implements PipeRunnable<TSql, VTSout> {
           ResultSet countresult = ar0.result();
           Integer _rows = countresult.getResults().get(0).getInteger(0);
           if (_rows == 0) {
-            Page page = new Page<>(pn, ps, 0, 0L, 0L, Collections.emptyList());
+            Page page = new Page<>(pn, ps, 0, 0L, 0L, Collections.emptyList(), Collections.emptyList());
             handler.handle(Future.succeededFuture(page));
             return;
           }
@@ -193,7 +193,7 @@ class VtomDBPipeRunnable implements PipeRunnable<TSql, VTSout> {
           long offset = ps * (pn - 1);
 
           if (pn > tpg) {
-            Page page = new Page<>(pn, ps, tpg, offset, _rows, Collections.emptyList());
+            Page page = new Page<>(pn, ps, tpg, offset, _rows, Collections.emptyList(), Collections.emptyList());
             handler.handle(Future.succeededFuture(page));
             return;
           }
@@ -207,7 +207,7 @@ class VtomDBPipeRunnable implements PipeRunnable<TSql, VTSout> {
               return;
             }
             ResultSet presult = ar1.result();
-            Page page = new Page<>(pn, ps, tpg, offset, _rows, Collections.singletonList(presult));
+            Page page = new Page<>(pn, ps, tpg, offset, _rows, presult.getColumnNames(), presult.getRows());
             handler.handle(Future.succeededFuture(page));
           });
 
