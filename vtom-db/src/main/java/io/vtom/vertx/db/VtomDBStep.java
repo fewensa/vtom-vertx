@@ -39,7 +39,7 @@ public class VtomDBStep implements PipeStep<TSql> {
   }
 
   @Override
-  public PipeStep<TSql> step(StepStack<TSql> stepstack) {
+  public VtomDBStep step(StepStack<TSql> stepstack) {
     this.step(Step.with(stepstack));
     return this;
   }
