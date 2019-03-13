@@ -63,6 +63,7 @@
         <configuration>
           <includes>
             <include>**/*.class</include>
+            <include>**/eocnf/*.eo.properties</include>
           </includes>
           <finalName>${project.artifactId}-${project.version}</finalName>
         </configuration>
