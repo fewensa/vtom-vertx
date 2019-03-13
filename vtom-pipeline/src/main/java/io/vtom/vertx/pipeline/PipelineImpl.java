@@ -42,7 +42,7 @@ class PipelineImpl implements Pipeline {
   }
 
   @Override
-  public PipeLifecycle cycle() {
+  public PipeLifecycle lifecycle() {
     return this.pipecycle;
   }
 

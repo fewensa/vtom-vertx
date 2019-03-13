@@ -25,7 +25,7 @@ public interface Pipeline {
     return pipeline;
   }
 
-  PipeLifecycle cycle();
+  PipeLifecycle lifecycle();
 
   <I extends StepIN, O extends StepOUT> Pipeline next(PipeRunnable<I, O> piperunnable);
 

@@ -51,7 +51,7 @@ public class VtomDBStep implements PipeStep<TSql> {
     if (CollectionKit.isEmpty(this.wrappers))
       return this.pipeline;
 
-    this.shared = this.pipeline.cycle().scope().danger(id);
+    this.shared = this.pipeline.lifecycle().scope().danger(id);
     AtomicInteger arc = (AtomicInteger) this.shared.computeIfAbsent("arc", key -> new AtomicInteger(0));
     if (this.tx)
       this.shared.set("tx", tx);
