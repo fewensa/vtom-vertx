@@ -1,12 +1,15 @@
 package io.vtom.vertx.db.data;
 
 import io.enoa.toolkit.map.EoMap;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.shareddata.Shareable;
+import io.vertx.core.shareddata.impl.ClusterSerializable;
 
 import java.time.Instant;
 import java.util.Map;
 
-public class Row implements EoMap<Row> {
+public class Row implements EoMap<Row>, ClusterSerializable, Shareable {
 
   private JsonObject jo;
 
@@ -59,5 +62,15 @@ public class Row implements EoMap<Row> {
   @Override
   public void clear() {
     this.jo.clear();
+  }
+
+  @Override
+  public void writeToBuffer(Buffer buffer) {
+    this.jo.writeToBuffer(buffer);
+  }
+
+  @Override
+  public int readFromBuffer(int pos, Buffer buffer) {
+    return this.jo.readFromBuffer(pos, buffer);
   }
 }
