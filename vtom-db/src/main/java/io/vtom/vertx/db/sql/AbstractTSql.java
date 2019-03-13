@@ -8,6 +8,9 @@ public abstract class AbstractTSql<T extends TSql> implements TSql {
 
 
   public T para(Object para) {
+    if (para instanceof Iterable)
+      return this.paras((Iterable) para);
+
     if (this.paras == null)
       this.paras = new JsonArray();
     if (para == null) {
