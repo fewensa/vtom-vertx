@@ -72,8 +72,13 @@ public class DBConverter {
 
       List<Row> rows1 = new ArrayList<>(rows0.size());
       for (Object o1 : rows0) {
+        if (o1 instanceof Row) {
+          rows1.add((Row) o1);
+          continue;
+        }
+
         if (!(o1 instanceof JsonObject))
-          throw new IllegalArgumentException(EnoaTipKit.message("eo.tip.vtom.db.convert_origin_type_error", JsonObject.class, origin.getClass()));
+          throw new IllegalArgumentException(EnoaTipKit.message("eo.tip.vtom.db.convert_origin_type_error", JsonObject.class, o1.getClass()));
         rows1.add(Row.create((JsonObject) o1));
       }
       po.setRows(rows1);
