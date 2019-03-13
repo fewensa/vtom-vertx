@@ -2,9 +2,6 @@ package io.vtom.vertx.db.sql;
 
 import io.vertx.core.json.JsonArray;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 public abstract class AbstractTSql<T extends TSql> implements TSql {
 
   private JsonArray paras;
@@ -21,9 +18,9 @@ public abstract class AbstractTSql<T extends TSql> implements TSql {
     return (T) this;
   }
 
-  public T paras(Collection collection) {
-    this.paras = new JsonArray(new ArrayList(collection.size()));
-    collection.forEach(item -> {
+  public T paras(Iterable iterable) {
+    this.paras = new JsonArray();
+    iterable.forEach(item -> {
       if (item == null) {
         this.paras.addNull();
         return;
