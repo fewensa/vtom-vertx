@@ -44,6 +44,7 @@ public class Page<T> implements Serializable {
     this.trw = totalRow;
     this.rows = rows;
     this.offset = offset;
+    this.columns = columns;
   }
 
   public int getPn() {
