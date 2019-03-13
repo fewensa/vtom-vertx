@@ -27,6 +27,12 @@ public interface TSql extends StepIN {
     return epm().tplaction(name);
   }
 
+  default TSql skipNoParas() {
+    return this.skipNoParas(true);
+  }
+
+  TSql skipNoParas(boolean yes);
+
   @Override
   <I extends StepIN> VTSout out(StepWrapper<I> wrapper);
 

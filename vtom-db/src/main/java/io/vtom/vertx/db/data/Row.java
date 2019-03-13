@@ -17,6 +17,10 @@ public class Row implements EoMap<Row>, ClusterSerializable, Shareable {
     return new Row(jo);
   }
 
+  public Row() {
+    this(new JsonObject());
+  }
+
   public Row(JsonObject jo) {
     this.jo = jo;
   }

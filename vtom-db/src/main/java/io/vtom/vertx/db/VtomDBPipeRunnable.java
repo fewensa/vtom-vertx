@@ -132,6 +132,11 @@ class VtomDBPipeRunnable implements PipeRunnable<TSql, VTSout> {
     String sql = output.sql();
     JsonArray paras = output.paras();
 
+    if (output.skipNoParas() && (paras == null || paras.isEmpty())) {
+      handler.handle(Future.succeededFuture());
+      return;
+    }
+
     String reportmark = this.reportMark(output);
 
 

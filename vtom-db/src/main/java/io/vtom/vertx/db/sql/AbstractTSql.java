@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonArray;
 public abstract class AbstractTSql<T extends TSql> implements TSql {
 
   private JsonArray paras;
+  private boolean skipNoParas;
 
 
   public T para(Object para) {
@@ -37,4 +38,13 @@ public abstract class AbstractTSql<T extends TSql> implements TSql {
     return this.paras;
   }
 
+  protected boolean isSkipNoParas() {
+    return this.skipNoParas;
+  }
+
+  @Override
+  public TSql skipNoParas(boolean yes) {
+    this.skipNoParas = yes;
+    return this;
+  }
 }

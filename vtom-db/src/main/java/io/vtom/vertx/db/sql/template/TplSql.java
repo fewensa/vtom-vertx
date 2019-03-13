@@ -140,6 +140,11 @@ public class TplSql extends AbstractTSql<TplSql> {
       public int pn() {
         return pn;
       }
+
+      @Override
+      public boolean skipNoParas() {
+        return TplSql.super.isSkipNoParas();
+      }
     };
   }
 

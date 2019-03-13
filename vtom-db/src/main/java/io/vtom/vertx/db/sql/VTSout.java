@@ -28,4 +28,6 @@ public interface VTSout extends StepOUT {
 
   int pn();
 
+  boolean skipNoParas();
+
 }

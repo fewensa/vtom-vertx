@@ -117,6 +117,11 @@ public class DSql extends AbstractTSql<DSql> {
       public int pn() {
         return pn;
       }
+
+      @Override
+      public boolean skipNoParas() {
+        return DSql.super.isSkipNoParas();
+      }
     };
   }
 
