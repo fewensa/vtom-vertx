@@ -48,6 +48,14 @@ public class DBConverter {
     };
   }
 
+  public static <T> IConverter<Row, T> toRow() {
+    return origin -> {
+      IConverter<List<Row>, T> converter = toRows();
+      List<Row> rows = converter.convert(origin);
+      return CollectionKit.isEmpty(rows) ? null : rows.get(0);
+    };
+  }
+
   public static <T> IConverter<Page<Row>, T> toPageRow() {
 
     return origin -> {
