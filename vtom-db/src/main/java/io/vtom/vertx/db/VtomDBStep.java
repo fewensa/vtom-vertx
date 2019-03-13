@@ -10,6 +10,7 @@ import io.vtom.vertx.pipeline.PipeStep;
 import io.vtom.vertx.pipeline.Pipeline;
 import io.vtom.vertx.pipeline.step.Step;
 import io.vtom.vertx.pipeline.step.StepWrapper;
+import io.vtom.vertx.pipeline.step.StepStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,12 @@ public class VtomDBStep implements PipeStep<TSql> {
 
   public VtomDBStep tx(boolean tx) {
     this.tx = tx;
+    return this;
+  }
+
+  @Override
+  public PipeStep<TSql> step(StepStack<TSql> stepstack) {
+    this.step(Step.with(stepstack));
     return this;
   }
 

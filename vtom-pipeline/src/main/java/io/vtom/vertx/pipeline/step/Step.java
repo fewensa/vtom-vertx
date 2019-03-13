@@ -2,7 +2,7 @@ package io.vtom.vertx.pipeline.step;
 
 public interface Step<T extends StepIN> extends _Step<T> {
 
-  static <J extends StepIN> Step<J> with(Stepstack<J> stepstack) {
+  static <J extends StepIN> Step<J> with(StepStack<J> stepstack) {
     return new StepImpl<>(stepstack);
   }
 

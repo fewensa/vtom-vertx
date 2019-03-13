@@ -3,11 +3,11 @@ package io.vtom.vertx.pipeline;
 import io.enoa.toolkit.digest.UUIDKit;
 import io.vtom.vertx.pipeline.step.Step;
 import io.vtom.vertx.pipeline.step.StepIN;
-import io.vtom.vertx.pipeline.step.Stepstack;
+import io.vtom.vertx.pipeline.step.StepStack;
 
 public interface PipeStep<T extends StepIN> {
 
-  default PipeStep<T> step(Stepstack<T> stepstack) {
+  default PipeStep<T> step(StepStack<T> stepstack) {
     return this.step(Step.with(stepstack));
   }
 

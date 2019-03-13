@@ -8,10 +8,10 @@ class StepImpl<T extends StepIN> implements Step<T> {
   private String id;
   private int ord;
   private int after;
-  private Stepstack<T> stepstack;
+  private StepStack<T> stepstack;
 
 
-  StepImpl(Stepstack<T> stepstack) {
+  StepImpl(StepStack<T> stepstack) {
     this.stepstack = stepstack;
     this.id = UUIDKit.next(false);
   }
@@ -53,7 +53,7 @@ class StepImpl<T extends StepIN> implements Step<T> {
       }
 
       @Override
-      public Stepstack<T> stepstack() {
+      public StepStack<T> stepstack() {
         return stepstack;
       }
     };
