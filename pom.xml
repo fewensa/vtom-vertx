@@ -13,6 +13,7 @@
     <module>vtom-pipeline</module>
     <module>vtom-db</module>
     <module>vtom-test</module>
+    <module>vtom-redis</module>
   </modules>
 
 
@@ -109,7 +110,6 @@
         <version>${version-vertx}</version>
       </dependency>
 
-
       <dependency>
         <groupId>io.vertx</groupId>
         <artifactId>vertx-web</artifactId>
@@ -130,26 +130,14 @@
 
       <dependency>
         <groupId>io.vertx</groupId>
-        <artifactId>vertx-unit</artifactId>
+        <artifactId>vertx-redis-client</artifactId>
         <version>${version-vertx}</version>
       </dependency>
 
       <dependency>
-        <groupId>com.intapp</groupId>
-        <artifactId>vertx-guice</artifactId>
-        <version>1.0</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <version>23.6-jre</version>
-      </dependency>
-
-      <dependency>
-        <groupId>xyz.downgoon</groupId>
-        <artifactId>snowflake</artifactId>
-        <version>${version-snowflake}</version>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-unit</artifactId>
+        <version>${version-vertx}</version>
       </dependency>
 
       <dependency>
