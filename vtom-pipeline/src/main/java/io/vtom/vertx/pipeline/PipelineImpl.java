@@ -166,14 +166,18 @@ class PipelineImpl implements Pipeline {
       this.callv3(endpromise, ix + 1);
       return;
     }
-    // register skip
-    out.skip();
 
-    VtmSkipContext context = VtmSkipContext.context(this.pipecycle.skip());
+    // only serial pipeline support skip
+    if (out.ord() > 0) {
+      // register skip
+      out.skip();
 
-    if (context.skip(out)) {
-      this.callv3(endpromise, ix + 1);
-      return;
+      VtmSkipContext context = VtmSkipContext.context(this.pipecycle.skip());
+
+      if (context.skip(out)) {
+        this.callv3(endpromise, ix + 1);
+        return;
+      }
     }
 
     // if parallel run, not wait step promise.
