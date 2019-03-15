@@ -4,7 +4,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.file.FileSystem;
 import io.vtom.vertx.pipeline.lifecycle.PipeLifecycle;
-import io.vtom.vertx.pipeline.lifecycle.skip.Skip;
 import io.vtom.vertx.pipeline.step.StepIN;
 import io.vtom.vertx.pipeline.step.StepWrapper;
 import io.vtom.vertx.pipeline.tk.Pvtk;
@@ -30,12 +29,7 @@ public class VtmFsChown extends AbstractFsAction<VtmFsChown> {
 
   @Override
   public <I extends StepIN> VtmFsOut out(PipeLifecycle lifecycle, StepWrapper<I> wrapper) {
-    return new AbstractVtmFsOut(wrapper) {
-      @Override
-      public Skip skip() {
-        return _skip();
-      }
-
+    return new AbstractVtmFsOut(lifecycle, wrapper, stepskips()) {
       @Override
       public void execute(FileSystem fs, Handler<AsyncResult<Object>> handler) {
         fs.chown(path(), user, group, Pvtk.handleTo(handler));

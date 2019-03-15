@@ -5,9 +5,7 @@ import io.vtom.vertx.pipeline.component.db.dialect.IDialect;
 import io.vtom.vertx.pipeline.component.db.sql.*;
 import io.vtom.vertx.pipeline.component.db.sql.psql.IPSql;
 import io.vtom.vertx.pipeline.component.db.sql.reporter.ISqlReporter;
-import io.vtom.vertx.pipeline.component.fs.action.VtmFsOut;
 import io.vtom.vertx.pipeline.lifecycle.PipeLifecycle;
-import io.vtom.vertx.pipeline.lifecycle.skip.Skip;
 import io.vtom.vertx.pipeline.step.StepIN;
 import io.vtom.vertx.pipeline.step.StepWrapper;
 
@@ -70,12 +68,7 @@ public class DSql extends AbstractTSql<DSql> {
   @Override
   public <I extends StepIN> VTSout out(PipeLifecycle lifecycle, StepWrapper<I> wrapper) {
     JsonArray paras = super.paras();
-    return new AbstractVTSout(wrapper) {
-      @Override
-      public Skip skip() {
-        return DSql.this.skip();
-      }
-
+    return new AbstractVTSout(lifecycle, wrapper, stepskips()) {
       @Override
       public IDialect dialect() {
         return options.getDialect();

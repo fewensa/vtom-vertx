@@ -8,7 +8,6 @@ import io.vtom.vertx.pipeline.component.db.sql.*;
 import io.vtom.vertx.pipeline.component.db.sql.psql.IPSql;
 import io.vtom.vertx.pipeline.component.db.sql.reporter.ISqlReporter;
 import io.vtom.vertx.pipeline.lifecycle.PipeLifecycle;
-import io.vtom.vertx.pipeline.lifecycle.skip.Skip;
 import io.vtom.vertx.pipeline.step.StepIN;
 import io.vtom.vertx.pipeline.step.StepWrapper;
 
@@ -92,11 +91,7 @@ public class TplSql extends AbstractTSql<TplSql> {
     }
 
     final JsonArray _paras = paja;
-    return new AbstractVTSout(wrapper) {
-      @Override
-      public Skip skip() {
-        return TplSql.this.skip();
-      }
+    return new AbstractVTSout(lifecycle, wrapper, stepskips()) {
 
       @Override
       public IDialect dialect() {

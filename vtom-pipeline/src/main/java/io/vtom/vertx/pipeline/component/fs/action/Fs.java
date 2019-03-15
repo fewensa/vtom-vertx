@@ -101,7 +101,7 @@ public interface Fs extends StepIN {
   }
 
   @Override
-  StepIN skip(Skip skip);
+  StepIN skip(StepSkip stepskip);
 
   @Override
   <I extends StepIN> VtmFsOut out(PipeLifecycle pipecycle, StepWrapper<I> wrapper);

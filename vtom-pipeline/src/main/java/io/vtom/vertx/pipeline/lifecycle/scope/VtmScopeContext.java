@@ -28,6 +28,9 @@ public class VtmScopeContext {
   }
 
   public VtmScopeContext put(StepOUT output, Object value) {
+    if (value == null)
+      return this;
+
     if (this.varid == null)
       this.varid = Kv.create();
 

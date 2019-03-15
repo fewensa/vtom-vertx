@@ -57,23 +57,6 @@ public class VtmSkipContext {
     return this;
   }
 
-  public void merge(Skip skip) {
-    VtmSkipContext thatctx = skip.context;
-    if (thatctx == this)
-      return;
-
-    if (thatctx.all) {
-      this.all = true;
-    }
-    if (thatctx.skipIdList != null) {
-      thatctx.skipIdList.forEach(this::id);
-    }
-    if (thatctx.skipOrds != null) {
-      thatctx.skipOrds.forEach(this::ord);
-    }
-  }
-
-
   public boolean skip(StepOUT stepout) {
     if (this.all)
       return true;

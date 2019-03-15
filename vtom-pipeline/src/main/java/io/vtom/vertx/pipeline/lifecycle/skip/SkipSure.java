@@ -2,13 +2,13 @@ package io.vtom.vertx.pipeline.lifecycle.skip;
 
 import java.util.Set;
 
-public class SkipCond {
+public class SkipSure {
 
   private boolean cond;
   private Skip skip;
 
 
-  SkipCond(Skip skip, boolean cond) {
+  SkipSure(Skip skip, boolean cond) {
     this.cond = cond;
     this.skip = skip;
   }

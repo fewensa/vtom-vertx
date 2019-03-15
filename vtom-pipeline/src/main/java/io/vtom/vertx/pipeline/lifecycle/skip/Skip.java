@@ -13,36 +13,12 @@ public class Skip {
   }
 
 
-
-  public SkipCond condition(boolean cond) {
-    return new SkipCond(this, cond);
+  public SkipSure yes() {
+    return areYouSure(true);
   }
 
-
-//  public Skip id(String id) {
-//    this.context.id(id);
-//    return this;
-//  }
-//
-//  public Skip id(Set<String> ids) {
-//    this.context.id(ids);
-//    return this;
-//  }
-//
-//  public Skip ord(Integer ord) {
-//    this.context.ord(ord);
-//    return this;
-//  }
-//
-//  public Skip ord(Set<Integer> ords) {
-//    this.context.ord(ords);
-//    return this;
-//  }
-//
-//  public Skip all() {
-//    this.context.all();
-//    return this;
-//  }
-
+  public SkipSure areYouSure(boolean cond) {
+    return new SkipSure(this, cond);
+  }
 
 }

@@ -15,6 +15,7 @@ import io.vtom.vertx.pipeline.lifecycle.scope.VtmScopeContext;
 import io.vtom.vertx.pipeline.lifecycle.skip.VtmSkipContext;
 import io.vtom.vertx.pipeline.step.StepIN;
 import io.vtom.vertx.pipeline.step.StepOUT;
+import io.vtom.vertx.pipeline.step.StepStack;
 import io.vtom.vertx.pipeline.step.StepWrapper;
 
 import java.util.*;
@@ -145,7 +146,35 @@ class PipelineImpl implements Pipeline {
 
     PipeRunnable piperunnable = this.piperunnables.get(ix);
     StepWrapper wrapper = piperunnable.wrapper();
-    StepOUT out = wrapper.stepstack().stepin(this.pipecycle).out(this.pipecycle, wrapper);
+    if (wrapper == null) {
+      this.callv3(endpromise, ix + 1);
+      return;
+    }
+    StepStack stepstack = wrapper.stepstack();
+    if (stepstack == null) {
+      this.callv3(endpromise, ix + 1);
+      return;
+    }
+    StepIN stepin = stepstack.stepin(this.pipecycle);
+    if (stepin == null) {
+      this.callv3(endpromise, ix + 1);
+      return;
+    }
+
+    StepOUT out = stepin.out(this.pipecycle, wrapper);
+    if (out == null) {
+      this.callv3(endpromise, ix + 1);
+      return;
+    }
+    // register skip
+    out.skip();
+
+    VtmSkipContext context = VtmSkipContext.context(this.pipecycle.skip());
+
+    if (context.skip(out)) {
+      this.callv3(endpromise, ix + 1);
+      return;
+    }
 
     // if parallel run, not wait step promise.
     if (wrapper.ord() <= 0) {
@@ -238,16 +267,6 @@ class PipelineImpl implements Pipeline {
       successHandler.execute(value);
     };
     try {
-
-      VtmSkipContext context = VtmSkipContext.context(this.pipecycle.skip());
-      context.merge(stepout.skip());
-
-      if (context.skip(stepout)) {
-        successHandler.execute(null);
-        return;
-      }
-
-
       runnable.call(stepout, handler);
     } catch (Exception e) {
       failHandler.execute(e);

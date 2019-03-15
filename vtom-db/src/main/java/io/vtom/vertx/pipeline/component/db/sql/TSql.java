@@ -5,6 +5,7 @@ import io.vtom.vertx.pipeline.component.db.sql.template.TplAction;
 import io.vtom.vertx.pipeline.lifecycle.PipeLifecycle;
 import io.vtom.vertx.pipeline.lifecycle.skip.Skip;
 import io.vtom.vertx.pipeline.step.StepIN;
+import io.vtom.vertx.pipeline.step.StepSkip;
 import io.vtom.vertx.pipeline.step.StepWrapper;
 
 public interface TSql extends StepIN {
@@ -30,7 +31,7 @@ public interface TSql extends StepIN {
   }
 
   @Override
-  TSql skip(Skip skip);
+  StepIN skip(StepSkip stepskip);
 
   @Override
   <I extends StepIN> VTSout out(PipeLifecycle lifecycle, StepWrapper<I> wrapper);

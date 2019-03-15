@@ -11,7 +11,6 @@ import io.vertx.ext.unit.TestSuite;
 import io.vtom.vertx.pipeline.component.fs.VtomFileSystem;
 import io.vtom.vertx.pipeline.component.fs.action.Fs;
 import io.vtom.vertx.pipeline.lifecycle.scope.Scope;
-import io.vtom.vertx.pipeline.lifecycle.skip.Skip;
 import io.vtom.vertx.pipeline.step.Step;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,35 +37,35 @@ public class VtomFileSystemTest {
 
   /*
 
-                         |
-                         |
-                         v            no     -----------------         fail
-                    <exists testDir>  ---->  | mkdir testDir |  -->-->-->-->-->-->--|
-                         |                   -----------------                      |
-        v<--<--<--<--|   | yes                    | ok                              v
-        |            |   v                        |                                 |
-        |      -<-- <exists testFile> <------------                              --------
-        v      |         v yes                                                   | done |
-        |    n |    -------------------                    fail                  --------
-        |    o v    | delete testFile | -->-->-->-->-->-->-->-->-->-->-->-->-->-->--|
-        v      |    -------------------                                             ^
-        |      |         v                                                          |
-        |      v    -------------------                    fail                     |
-        v      ---> | create testFile | -->-->-->-->-->-->-->-->-->-->-->-->-->-->--^
-        |           -------------------                                             |
-        |                v                                                          |
-        v           ------------------                     fail                     ^
-        |           | write testFile | -->-->-->-->-->-->-->-->-->-->-->-->-->-->-->|
-        |           ------------------                                              |
-        v                v              yes   -----------------------               ^
-        |<--<--<--<exists testCopyFile> --->  | delete testCopyFile |               |
-        |                v no                 -----------------------               |
-        v     ---------------------------------           |                         ^
-        |     | copy testFile to testCopyFile |   <--------                         |
-        |     ---------------------------------                                     |
-        v            | ok     | fail                                                ^
-        |            v        v                                                     |
-        |-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->|
+    !                      |
+    !                      |
+    !                      v            no     -----------------         fail
+    !                 <exists testDir>  ---->  | mkdir testDir |  -->-->-->-->-->-->--+
+    !                      |                   -----------------                      |
+    !     +<--<--<--<--|   | yes                    | ok                              v
+    !     |            |   v                        |                                 |
+    !     |      +<-- <exists testFile> <-----------+                              --------
+    !     v      |         v yes                                                   | done |
+    !     |    n |    -------------------                    fail                  --------
+    !     |    o v    | delete testFile | -->-->-->-->-->-->-->-->-->-->-->-->-->-->--+
+    !     v      |    -------------------                                             ^
+    !     |      |         v                                                          |
+    !     |      v    -------------------                    fail                     |
+    !     v      +--> | create testFile | -->-->-->-->-->-->-->-->-->-->-->-->-->-->--^
+    !     |           -------------------                                             |
+    !     |                v                                                          |
+    !     v           ------------------                     fail                     ^
+    !     |           | write testFile | -->-->-->-->-->-->-->-->-->-->-->-->-->-->-->+
+    !     |           ------------------                                              |
+    !     v                v              yes   -----------------------               ^
+    !     +<--<--<--<exists testCopyFile> --->  | delete testCopyFile |               |
+    !     |                v no                 -----------------------               |
+    !     v     ---------------------------------           |                         ^
+    !     |     | copy testFile to testCopyFile |   <-------+                         |
+    !     |     ---------------------------------                                     |
+    !     v            | ok     | fail                                                ^
+    !     |            v        v                                                     |
+    !     +-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->+
 
 
    */
@@ -77,6 +76,7 @@ public class VtomFileSystemTest {
     this.suite.test("vertx.read", ctx -> {
       Async async = ctx.async(12);
       FileSystem fs = this.vertx.fileSystem();
+      long start = System.currentTimeMillis();
 
       fs.exists(testDir, ar0 -> {
         if (ar0.failed()) {
@@ -202,11 +202,6 @@ public class VtomFileSystemTest {
                       async.complete();
                       return;
                     }
-//              fs.deleteRecursive(testDir, true, ar4 -> {
-//                if (ar4.failed()) {
-//                  ar4.cause().printStackTrace();
-//                }
-//              });
                     async.complete();
                   });
                 });
@@ -340,6 +335,8 @@ public class VtomFileSystemTest {
       });
 
       async.awaitSuccess();
+      long end = System.currentTimeMillis();
+      System.out.println("TIME: " + (end - start));
     }).run();
   }
 
@@ -348,12 +345,13 @@ public class VtomFileSystemTest {
   public void testVtomFs() {
     this.suite.test("vtom.read", ctx -> {
       Async async = ctx.async();
+      long start = System.currentTimeMillis();
       VtomFileSystem.with(this.vertx).component()
         .step(Step.with(lifecycle -> Fs.exists(testDir)).ord(1))
         .step(Step.with(lifecycle -> {
           Scope scope = lifecycle.scope();
-          Boolean exists = scope.value(1).value().bool();
-          return Fs.mkdirs(testDir).skip(lifecycle.skip().condition(!exists).skipOrd(2));
+          Boolean exists = scope.value(1).as();
+          return Fs.mkdirs(testDir).skip(skip -> skip.areYouSure(exists).skipOrd(2));
         }).ord(2))
         .step(Step.with(lifecycle -> Fs.exists(testFile)).ord(3))
         .step(Step.with(lifecycle -> {
@@ -361,19 +359,21 @@ public class VtomFileSystemTest {
           Boolean exists = scope.value(3).value().bool();
           if (exists)
             return Fs.delete(testFile);
-          return Fs.createFile(testFile).skip(lifecycle.skip().condition(true).skipOrd(5));
+          return Fs.createFile(testFile).skip(skip -> skip.yes().skipOrd(5));
         }).ord(4))
         .step(Step.with(lifecycle -> Fs.createFile(testFile)).ord(5))
         .step(Step.with(lifecycle -> Fs.writeFile(testFile).buffer(Buffer.buffer(UUIDKit.next()))).ord(6))
         .step(Step.with(lifecycle -> Fs.exists(testCopyFile)).ord(7))
         .step(Step.with(lifecycle -> {
           Scope scope = lifecycle.scope();
-          Boolean exists = scope.value(7).value().bool();
+          Boolean exists = scope.value(7).as();
           if (exists)
             return Fs.delete(testCopyFile);
-          return Fs.copy(testFile).to(testCopyFile).skip(Skip.skip().condition(true).skipOrd(9));
+          return null;
         }).ord(8))
         .step(Step.with(lifecycle -> Fs.copy(testFile).to(testCopyFile)).ord(9))
+//        .step(Step.with(lifecycle -> Fs.delete(testFile)).after(9))
+//        .step(Step.with(lifecycle -> Fs.delete(testCopyFile)).after(9))
         .join()
         .enqueue()
         .capture(Throwable::printStackTrace)
@@ -381,8 +381,11 @@ public class VtomFileSystemTest {
           Scope scope = lifecycle.scope();
           System.out.println(scope);
         })
-        .always(() -> async.complete());
+        .always(async::complete);
       async.awaitSuccess();
+
+      long end = System.currentTimeMillis();
+      System.out.println("TIME: " + (end - start));
     }).run();
   }
 
