@@ -1,6 +1,6 @@
 package io.vtom.vertx.pipeline.step;
 
-import io.vtom.vertx.pipeline.PipeLifecycle;
+import io.vtom.vertx.pipeline.lifecycle.PipeLifecycle;
 
 public interface StepStack<T extends StepIN> {
 

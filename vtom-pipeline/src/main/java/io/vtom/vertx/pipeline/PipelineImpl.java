@@ -9,7 +9,10 @@ import io.enoa.toolkit.collection.CollectionKit;
 import io.enoa.toolkit.eo.tip.EnoaTipKit;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vtom.vertx.pipeline.scope.ScopeContext;
+import io.vtom.vertx.pipeline.lifecycle.PipeLifecycle;
+import io.vtom.vertx.pipeline.lifecycle.scope.Scope;
+import io.vtom.vertx.pipeline.lifecycle.scope.VtmScopeContext;
+import io.vtom.vertx.pipeline.lifecycle.skip.VtmSkipContext;
 import io.vtom.vertx.pipeline.step.StepIN;
 import io.vtom.vertx.pipeline.step.StepOUT;
 import io.vtom.vertx.pipeline.step.StepWrapper;
@@ -34,8 +37,8 @@ class PipelineImpl implements Pipeline {
   private List<PipeRunnable> piperunnables;
 
 
-  PipelineImpl(ScopeContext context) {
-    this.pipecycle = new PipeLifecycle(context.scope());
+  PipelineImpl(Scope scope) {
+    this.pipecycle = new PipeLifecycle(scope);
     this.piperunnables = null;
     this.stat = Stat.WAIT;
     this.alwayscalled = new AtomicBoolean(Boolean.FALSE);
@@ -119,42 +122,6 @@ class PipelineImpl implements Pipeline {
     boolean cond(PipeRunnable piperunnable);
   }
 
-
-  private void runnableCall(PipeRunnable runnable, StepOUT stepout, PromiseArg<Object> successHandler, PromiseCapture failHandler) {
-    Handler<AsyncResult<Object>> handler = ar -> {
-      if (ar.failed()) {
-        failHandler.execute(ar.cause());
-        return;
-      }
-      Object value = ar.result();
-      successHandler.execute(value);
-    };
-    try {
-      runnable.call(stepout, handler);
-    } catch (Exception e) {
-      failHandler.execute(e);
-    }
-  }
-
-
-  private void handleDone(EPDoneArgPromiseBuilder<PipeLifecycle> endpromise) {
-    for (PromiseArg<PipeLifecycle> done : endpromise.dones()) {
-      try {
-        done.execute(this.pipecycle);
-      } catch (Exception e) {
-        for (PromiseCapture capture : endpromise.captures()) {
-          try {
-            capture.execute(e);
-          } catch (Exception ex) {
-            ex.printStackTrace();
-            break;
-          }
-        }
-        break;
-      }
-    }
-  }
-
   private void callv3(EPDoneArgPromiseBuilder<PipeLifecycle> endpromise, int ix) {
 
     // if pipeline status is STOP, end call
@@ -178,14 +145,14 @@ class PipelineImpl implements Pipeline {
 
     PipeRunnable piperunnable = this.piperunnables.get(ix);
     StepWrapper wrapper = piperunnable.wrapper();
-    StepOUT out = wrapper.stepstack().stepin(this.pipecycle).out(wrapper);
+    StepOUT out = wrapper.stepstack().stepin(this.pipecycle).out(this.pipecycle, wrapper);
 
     // if parallel run, not wait step promise.
     if (wrapper.ord() <= 0) {
       this.runnableCall(piperunnable, out,
         value -> this.release(ix, true,
           () -> {
-            ScopeContext.context(this.pipecycle.scope()).put(out, value);
+            VtmScopeContext.context(this.pipecycle.scope()).put(out, value);
             // parallel pipeline, should not set last step id
 
             if (ix + 1 < this.piperunnables.size()) {
@@ -222,8 +189,8 @@ class PipelineImpl implements Pipeline {
     this.runnableCall(piperunnable, out,
       value -> this.release(ix, true,
         () -> {
-          ScopeContext.context(this.pipecycle.scope()).put(out, value);
-          ScopeContext.context(this.pipecycle.scope()).last(out.id());
+          VtmScopeContext.context(this.pipecycle.scope()).put(out, value);
+          VtmScopeContext.context(this.pipecycle.scope()).last(out);
 
           this.callv3(endpromise, ix + 1);
         },
@@ -259,6 +226,50 @@ class PipelineImpl implements Pipeline {
       successHandler.execute();
     };
     runnable.release(ok, handler);
+  }
+
+  private void runnableCall(PipeRunnable runnable, StepOUT stepout, PromiseArg<Object> successHandler, PromiseCapture failHandler) {
+    Handler<AsyncResult<Object>> handler = ar -> {
+      if (ar.failed()) {
+        failHandler.execute(ar.cause());
+        return;
+      }
+      Object value = ar.result();
+      successHandler.execute(value);
+    };
+    try {
+
+      VtmSkipContext context = VtmSkipContext.context(this.pipecycle.skip());
+      context.merge(stepout.skip());
+
+      if (context.skip(stepout)) {
+        successHandler.execute(null);
+        return;
+      }
+
+
+      runnable.call(stepout, handler);
+    } catch (Exception e) {
+      failHandler.execute(e);
+    }
+  }
+
+  private void handleDone(EPDoneArgPromiseBuilder<PipeLifecycle> endpromise) {
+    for (PromiseArg<PipeLifecycle> done : endpromise.dones()) {
+      try {
+        done.execute(this.pipecycle);
+      } catch (Exception e) {
+        for (PromiseCapture capture : endpromise.captures()) {
+          try {
+            capture.execute(e);
+          } catch (Exception ex) {
+            ex.printStackTrace();
+            break;
+          }
+        }
+        break;
+      }
+    }
   }
 
 }

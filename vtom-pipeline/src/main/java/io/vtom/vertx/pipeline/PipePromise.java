@@ -4,6 +4,7 @@ import io.enoa.promise.DoneArgPromise;
 import io.enoa.promise.arg.PromiseArg;
 import io.enoa.promise.arg.PromiseCapture;
 import io.enoa.promise.arg.PromiseVoid;
+import io.vtom.vertx.pipeline.lifecycle.PipeLifecycle;
 
 public class PipePromise implements DoneArgPromise<PipeLifecycle> {
 

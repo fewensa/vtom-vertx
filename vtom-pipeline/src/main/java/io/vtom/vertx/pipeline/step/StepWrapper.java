@@ -1,6 +1,13 @@
 package io.vtom.vertx.pipeline.step;
 
-public interface StepWrapper<T extends StepIN> extends StepOUT {
+// extends StepOUT
+public interface StepWrapper<T extends StepIN> {
+
+  String id();
+
+  int ord();
+
+  int after();
 
   StepStack<T> stepstack();
 

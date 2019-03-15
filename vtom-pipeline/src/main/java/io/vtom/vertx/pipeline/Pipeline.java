@@ -1,7 +1,7 @@
 package io.vtom.vertx.pipeline;
 
-import io.vtom.vertx.pipeline.scope.Scope;
-import io.vtom.vertx.pipeline.scope.ScopeContext;
+import io.vtom.vertx.pipeline.lifecycle.PipeLifecycle;
+import io.vtom.vertx.pipeline.lifecycle.scope.Scope;
 import io.vtom.vertx.pipeline.step.StepIN;
 import io.vtom.vertx.pipeline.step.StepOUT;
 
@@ -10,11 +10,7 @@ import java.util.List;
 public interface Pipeline {
 
   static Pipeline pipeline() {
-    return pipeline(Scope.context());
-  }
-
-  static Pipeline pipeline(ScopeContext context) {
-    return new PipelineImpl(context);
+    return new PipelineImpl(Scope.scope());
   }
 
   static Pipeline join(List<PipeStep> steps) {
