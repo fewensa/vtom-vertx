@@ -2,7 +2,7 @@ package io.vtom.vertx.pipeline.component.db.sql;
 
 import io.enoa.toolkit.collection.CollectionKit;
 import io.vertx.core.json.JsonArray;
-import io.vtom.vertx.pipeline.lifecycle.PipeLifecycle;
+import io.vtom.vertx.pipeline.lifecycle.skip.Skip;
 import io.vtom.vertx.pipeline.step.StepIN;
 import io.vtom.vertx.pipeline.step.StepSkip;
 import io.vtom.vertx.pipeline.step.StepWrapper;
@@ -12,12 +12,10 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractVTSout implements VTSout {
 
-  private PipeLifecycle lifecycle;
   private StepWrapper<? extends StepIN> wrapper;
   private List<StepSkip> stepskips;
 
-  protected AbstractVTSout(PipeLifecycle lifecycle, StepWrapper<? extends StepIN> wrapper, List<StepSkip> stepskips) {
-    this.lifecycle = lifecycle;
+  protected AbstractVTSout(StepWrapper<? extends StepIN> wrapper, List<StepSkip> stepskips) {
     this.wrapper = wrapper;
     this.stepskips = stepskips;
   }
@@ -38,10 +36,10 @@ public abstract class AbstractVTSout implements VTSout {
   }
 
   @Override
-  public void skip() {
+  public void skip(Skip skip) {
     if (CollectionKit.isEmpty(this.stepskips))
       return;
-    this.stepskips.forEach(stepskip -> stepskip.skip(this.lifecycle.skip()));
+    this.stepskips.forEach(stepskip -> stepskip.skip(skip));
   }
 
   @Override

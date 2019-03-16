@@ -161,7 +161,7 @@ class PipelineImpl implements Pipeline {
       return;
     }
 
-    StepOUT out = stepin.out(this.pipecycle, wrapper);
+    StepOUT out = stepin.out(wrapper);
     if (out == null) {
       this.callv3(endpromise, ix + 1);
       return;
@@ -170,7 +170,7 @@ class PipelineImpl implements Pipeline {
     // only serial pipeline support skip
     if (out.ord() > 0) {
       // register skip
-      out.skip();
+      out.skip(this.pipecycle.skip());
 
       VtmSkipContext context = VtmSkipContext.context(this.pipecycle.skip());
 

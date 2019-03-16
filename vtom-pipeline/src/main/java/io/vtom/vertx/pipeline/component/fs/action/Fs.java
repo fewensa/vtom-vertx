@@ -1,7 +1,5 @@
 package io.vtom.vertx.pipeline.component.fs.action;
 
-import io.vtom.vertx.pipeline.lifecycle.PipeLifecycle;
-import io.vtom.vertx.pipeline.lifecycle.skip.Skip;
 import io.vtom.vertx.pipeline.step.StepIN;
 import io.vtom.vertx.pipeline.step.StepSkip;
 import io.vtom.vertx.pipeline.step.StepWrapper;
@@ -104,5 +102,5 @@ public interface Fs extends StepIN {
   StepIN skip(StepSkip stepskip);
 
   @Override
-  <I extends StepIN> VtmFsOut out(PipeLifecycle pipecycle, StepWrapper<I> wrapper);
+  <I extends StepIN> VtmFsOut out(StepWrapper<I> wrapper);
 }
