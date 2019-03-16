@@ -49,6 +49,11 @@ class PipelineImpl implements Pipeline {
 
   @Override
   public <I extends StepIN, O extends StepOUT> Pipeline next(PipeRunnable<I, O> piperunnable) {
+    if (piperunnable == null)
+      return this;
+    if (piperunnable.step() == null)
+      return this;
+
     if (this.piperunnables == null)
       this.piperunnables = new ArrayList<>();
     boolean exists = this.piperunnables.stream()
