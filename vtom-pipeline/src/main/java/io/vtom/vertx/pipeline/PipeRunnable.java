@@ -2,13 +2,13 @@ package io.vtom.vertx.pipeline;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vtom.vertx.pipeline.step.Step;
 import io.vtom.vertx.pipeline.step.StepIN;
 import io.vtom.vertx.pipeline.step.StepOUT;
-import io.vtom.vertx.pipeline.step.StepWrapper;
 
 public interface PipeRunnable<I extends StepIN, O extends StepOUT> {
 
-  StepWrapper<? extends I> wrapper();
+  Step<? extends I> step();
 
   void call(O stepout, Handler<AsyncResult<Object>> handler);
 

@@ -1,16 +1,38 @@
 package io.vtom.vertx.pipeline.step;
 
-public interface Step<T extends StepIN> extends _Step<T> {
+public class Step<T extends StepIN> {
 
-  static <J extends StepIN> Step<J> with(StepStack<J> stepstack) {
-    return new StepImpl<>(stepstack);
+  private VtmStepContext<T> context;
+
+  Step(VtmStepContext<T> context) {
+    this.context = context;
   }
 
-  Step<T> id(String id);
+  public Step(StepStack<T> stepstack) {
+    this(new VtmStepContext<>(stepstack));
+  }
 
-  Step<T> ord(int ord);
+  public static <J extends StepIN> Step<J> with(StepStack<J> stepstack) {
+    return new Step<>(stepstack);
+  }
 
-  Step<T> after(int after);
+  protected VtmStepContext<T> context() {
+    return this.context;
+  }
 
+  public Step<T> id(String id) {
+    this.context.id(id);
+    return this;
+  }
+
+  public Step<T> ord(int ord) {
+    this.context.ord(ord);
+    return this;
+  }
+
+  public Step<T> after(int after) {
+    this.context.after(after);
+    return this;
+  }
 
 }

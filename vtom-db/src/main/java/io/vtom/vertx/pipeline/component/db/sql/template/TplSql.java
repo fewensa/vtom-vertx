@@ -7,8 +7,6 @@ import io.vtom.vertx.pipeline.component.db.dialect.IDialect;
 import io.vtom.vertx.pipeline.component.db.sql.*;
 import io.vtom.vertx.pipeline.component.db.sql.psql.IPSql;
 import io.vtom.vertx.pipeline.component.db.sql.reporter.ISqlReporter;
-import io.vtom.vertx.pipeline.step.StepIN;
-import io.vtom.vertx.pipeline.step.StepWrapper;
 
 
 public class TplSql extends AbstractTSql<TplSql> {
@@ -74,7 +72,7 @@ public class TplSql extends AbstractTSql<TplSql> {
   }
 
   @Override
-  public <I extends StepIN> VTSout out(StepWrapper<I> wrapper) {
+  public VTSout out() {
     FireBody firebody = this.options.getFiretpl().render(this.sqlname, this.parakv);
     Object[] fireparas = firebody.paras();
     JsonArray paja = super.paras();
@@ -90,7 +88,7 @@ public class TplSql extends AbstractTSql<TplSql> {
     }
 
     final JsonArray _paras = paja;
-    return new AbstractVTSout(wrapper, stepskips()) {
+    return new AbstractVTSout(stepskips()) {
 
       @Override
       public IDialect dialect() {

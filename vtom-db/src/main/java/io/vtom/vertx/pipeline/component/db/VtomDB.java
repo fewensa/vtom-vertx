@@ -1,9 +1,9 @@
 package io.vtom.vertx.pipeline.component.db;
 
 import io.vertx.ext.jdbc.JDBCClient;
-import io.vtom.vertx.pipeline.component.db.sql.TSql;
 import io.vtom.vertx.pipeline.PipeComponent;
 import io.vtom.vertx.pipeline.Pipeline;
+import io.vtom.vertx.pipeline.component.db.sql.TSql;
 
 public class VtomDB implements PipeComponent<TSql> {
 

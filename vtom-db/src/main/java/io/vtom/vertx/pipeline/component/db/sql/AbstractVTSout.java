@@ -3,36 +3,17 @@ package io.vtom.vertx.pipeline.component.db.sql;
 import io.enoa.toolkit.collection.CollectionKit;
 import io.vertx.core.json.JsonArray;
 import io.vtom.vertx.pipeline.lifecycle.skip.Skip;
-import io.vtom.vertx.pipeline.step.StepIN;
 import io.vtom.vertx.pipeline.step.StepSkip;
-import io.vtom.vertx.pipeline.step.StepWrapper;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public abstract class AbstractVTSout implements VTSout {
 
-  private StepWrapper<? extends StepIN> wrapper;
   private List<StepSkip> stepskips;
 
-  protected AbstractVTSout(StepWrapper<? extends StepIN> wrapper, List<StepSkip> stepskips) {
-    this.wrapper = wrapper;
+  protected AbstractVTSout(List<StepSkip> stepskips) {
     this.stepskips = stepskips;
-  }
-
-  @Override
-  public String id() {
-    return this.wrapper.id();
-  }
-
-  @Override
-  public int ord() {
-    return this.wrapper.ord();
-  }
-
-  @Override
-  public int after() {
-    return this.wrapper.after();
   }
 
   @Override

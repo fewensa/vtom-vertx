@@ -3,8 +3,6 @@ package io.vtom.vertx.pipeline.component.fs.action;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.file.FileSystem;
-import io.vtom.vertx.pipeline.step.StepIN;
-import io.vtom.vertx.pipeline.step.StepWrapper;
 import io.vtom.vertx.pipeline.tk.Pvtk;
 
 public class VtmFsCreateTempDirectory extends AbstractFsAction<VtmFsCreateTempDirectory> {
@@ -27,8 +25,8 @@ public class VtmFsCreateTempDirectory extends AbstractFsAction<VtmFsCreateTempDi
   }
 
   @Override
-  public <I extends StepIN> VtmFsOut out(StepWrapper<I> wrapper) {
-    return new AbstractVtmFsOut(wrapper, stepskips()) {
+  public VtmFsOut out() {
+    return new AbstractVtmFsOut(stepskips()) {
       @Override
       public void execute(FileSystem fs, Handler<AsyncResult<Object>> handler) {
         String prefix = path();

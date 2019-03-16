@@ -10,7 +10,6 @@ import io.vtom.vertx.pipeline.component.fs.action.Fs;
 import io.vtom.vertx.pipeline.component.fs.action.VtmFsOut;
 import io.vtom.vertx.pipeline.step.Step;
 import io.vtom.vertx.pipeline.step.StepStack;
-import io.vtom.vertx.pipeline.step.StepWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +18,7 @@ public class VtomFileSystemStep implements PipeStep<Fs> {
 
   private Pipeline pipeline;
   private Vertx vertx;
-  private List<StepWrapper<? extends Fs>> wrappers;
+  private List<Step<? extends Fs>> steps;
   private Kv shared;
 
   public VtomFileSystemStep(Vertx vertx, Pipeline pipeline) {
@@ -34,22 +33,21 @@ public class VtomFileSystemStep implements PipeStep<Fs> {
 
   @Override
   public VtomFileSystemStep step(Step<? extends Fs> step) {
-    StepWrapper<? extends Fs> wrapper = step._wrapper();
-    if (this.wrappers == null)
-      this.wrappers = new ArrayList<>();
-    this.wrappers.add(wrapper);
+    if (this.steps == null)
+      this.steps = new ArrayList<>();
+    this.steps.add(step);
     return this;
   }
 
   @Override
   public Pipeline join(String id) {
-    if (CollectionKit.isEmpty(this.wrappers))
+    if (CollectionKit.isEmpty(this.steps))
       return this.pipeline;
-    this.wrappers.forEach(wrapper -> this.pipeline.next(this.piperunable(wrapper)));
+    this.steps.forEach(step -> this.pipeline.next(this.piperunable(step)));
     return this.pipeline;
   }
 
-  private PipeRunnable<Fs, VtmFsOut> piperunable(StepWrapper<? extends Fs> wrapper) {
-    return new VtomFileSystemRunnable(this.vertx, this.pipeline, wrapper, this.shared);
+  private PipeRunnable<Fs, VtmFsOut> piperunable(Step<? extends Fs> step) {
+    return new VtomFileSystemRunnable(this.vertx, step, this.shared);
   }
 }

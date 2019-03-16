@@ -5,8 +5,6 @@ import io.vtom.vertx.pipeline.component.db.dialect.IDialect;
 import io.vtom.vertx.pipeline.component.db.sql.*;
 import io.vtom.vertx.pipeline.component.db.sql.psql.IPSql;
 import io.vtom.vertx.pipeline.component.db.sql.reporter.ISqlReporter;
-import io.vtom.vertx.pipeline.step.StepIN;
-import io.vtom.vertx.pipeline.step.StepWrapper;
 
 public class DSql extends AbstractTSql<DSql> {
 
@@ -65,9 +63,9 @@ public class DSql extends AbstractTSql<DSql> {
 
 
   @Override
-  public <I extends StepIN> VTSout out(StepWrapper<I> wrapper) {
+  public VTSout out() {
     JsonArray paras = super.paras();
-    return new AbstractVTSout(wrapper, stepskips()) {
+    return new AbstractVTSout(stepskips()) {
       @Override
       public IDialect dialect() {
         return options.getDialect();

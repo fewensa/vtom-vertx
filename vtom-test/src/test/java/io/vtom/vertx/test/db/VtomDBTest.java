@@ -19,7 +19,6 @@ import io.vtom.vertx.pipeline.component.db.page.Page;
 import io.vtom.vertx.pipeline.component.db.sql.TSql;
 import io.vtom.vertx.pipeline.component.db.sql.TSqlOptions;
 import io.vtom.vertx.pipeline.lifecycle.scope.Scope;
-import io.vtom.vertx.pipeline.lifecycle.skip.Skip;
 import io.vtom.vertx.pipeline.step.Step;
 import org.junit.Before;
 import org.junit.Test;

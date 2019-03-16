@@ -1,6 +1,6 @@
 package io.vtom.vertx.pipeline.lifecycle.skip;
 
-import io.vtom.vertx.pipeline.step.StepOUT;
+import io.vtom.vertx.pipeline.step.VtmStepContext;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -57,17 +57,17 @@ public class VtmSkipContext {
     return this;
   }
 
-  public boolean skip(StepOUT stepout) {
+  public boolean skip(VtmStepContext stepcontext) {
     if (this.all)
       return true;
 
     if (this.skipIdList != null) {
-      if (this.skipIdList.contains(stepout.id()))
+      if (this.skipIdList.contains(stepcontext.id()))
         return true;
     }
 
     if (this.skipOrds != null) {
-      if (this.skipOrds.contains(stepout.ord()))
+      if (this.skipOrds.contains(stepcontext.ord()))
         return true;
     }
     return false;

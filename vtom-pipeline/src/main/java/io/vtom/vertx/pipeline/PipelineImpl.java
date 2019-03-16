@@ -13,10 +13,7 @@ import io.vtom.vertx.pipeline.lifecycle.PipeLifecycle;
 import io.vtom.vertx.pipeline.lifecycle.scope.Scope;
 import io.vtom.vertx.pipeline.lifecycle.scope.VtmScopeContext;
 import io.vtom.vertx.pipeline.lifecycle.skip.VtmSkipContext;
-import io.vtom.vertx.pipeline.step.StepIN;
-import io.vtom.vertx.pipeline.step.StepOUT;
-import io.vtom.vertx.pipeline.step.StepStack;
-import io.vtom.vertx.pipeline.step.StepWrapper;
+import io.vtom.vertx.pipeline.step.*;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,10 +52,11 @@ class PipelineImpl implements Pipeline {
     if (this.piperunnables == null)
       this.piperunnables = new ArrayList<>();
     boolean exists = this.piperunnables.stream()
-      .filter(runnable -> runnable.wrapper().ord() > 0)
-      .map(runnable -> runnable.wrapper().ord())
+      .filter(runnable -> runnable.step() != null)
+      .filter(runnable -> VtmStepContext.context(runnable.step()).ord() > 0)
+      .map(runnable -> VtmStepContext.context(runnable.step()).ord())
       .collect(Collectors.toSet())
-      .contains(piperunnable.wrapper().ord());
+      .contains(VtmStepContext.context(piperunnable.step()).ord());
     if (exists)
       throw new IllegalArgumentException(EnoaTipKit.message("eo.tip.vtom.pipeline.duplicates_ord"));
     this.piperunnables.add(piperunnable);
@@ -87,22 +85,23 @@ class PipelineImpl implements Pipeline {
 
   private void recheck() {
     Set<String> idsets = this.piperunnables.stream()
-      .map(runnable -> runnable.wrapper().id())
+      .filter(runnable -> runnable.step() != null)
+      .map(runnable -> VtmStepContext.context(runnable.step()).id())
       .collect(Collectors.toSet());
     if (idsets.size() != this.piperunnables.size())
       throw new RuntimeException(EnoaTipKit.message("eo.tip.vtom.pipeline.duplicates_id"));
     CollectionKit.clear(idsets);
 
-    this.piperunnables.sort(Comparator.comparingInt(o -> o.wrapper().ord()));
+    this.piperunnables.sort(Comparator.comparingInt(o -> VtmStepContext.context(o.step()).ord()));
     Set<String> moveds = new HashSet<>(this.piperunnables.size());
     int nix;
     while ((nix = this.clocix(runnable ->
-      !moveds.contains(runnable.wrapper().id()) &&
-        runnable.wrapper().ord() <= 0 &&
-        runnable.wrapper().after() > 0)) != -1) {
+      !moveds.contains(VtmStepContext.context(runnable.step()).id()) &&
+        VtmStepContext.context(runnable.step()).ord() <= 0 &&
+        VtmStepContext.context(runnable.step()).after() > 0)) != -1) {
       PipeRunnable nrunnable = this.piperunnables.get(nix);
-      moveds.add(nrunnable.wrapper().id());
-      int tix = this.clocix(runnable -> runnable.wrapper().ord() == nrunnable.wrapper().after());
+      moveds.add(VtmStepContext.context(nrunnable.step()).id());
+      int tix = this.clocix(runnable -> VtmStepContext.context(runnable.step()).ord() == VtmStepContext.context(nrunnable.step()).after());
       if (tix == -1)
         continue;
 //      Collections.swap(this.piperunnables, nix, tix);
@@ -113,7 +112,10 @@ class PipelineImpl implements Pipeline {
 
   private int clocix(CondIx cix) {
     for (int i = 0; i < this.piperunnables.size(); i++) {
-      if (cix.cond(this.piperunnables.get(i)))
+      PipeRunnable piperunnable = this.piperunnables.get(i);
+      if (piperunnable.step() == null)
+        continue;
+      if (cix.cond(piperunnable))
         return i;
     }
     return -1;
@@ -145,12 +147,14 @@ class PipelineImpl implements Pipeline {
     }
 
     PipeRunnable piperunnable = this.piperunnables.get(ix);
-    StepWrapper wrapper = piperunnable.wrapper();
-    if (wrapper == null) {
+    Step step = piperunnable.step();
+    if (step == null) {
       this.callv3(endpromise, ix + 1);
       return;
     }
-    StepStack stepstack = wrapper.stepstack();
+
+    VtmStepContext stepcontext = VtmStepContext.context(step);
+    StepStack stepstack = stepcontext.stepstack();
     if (stepstack == null) {
       this.callv3(endpromise, ix + 1);
       return;
@@ -161,31 +165,31 @@ class PipelineImpl implements Pipeline {
       return;
     }
 
-    StepOUT out = stepin.out(wrapper);
-    if (out == null) {
+    StepOUT stepout = stepin.out();
+    if (stepout == null) {
       this.callv3(endpromise, ix + 1);
       return;
     }
 
     // only serial pipeline support skip
-    if (out.ord() > 0) {
+    if (stepcontext.ord() > 0) {
       // register skip
-      out.skip(this.pipecycle.skip());
+      stepout.skip(this.pipecycle.skip());
 
-      VtmSkipContext context = VtmSkipContext.context(this.pipecycle.skip());
+      VtmSkipContext skipcontext = VtmSkipContext.context(this.pipecycle.skip());
 
-      if (context.skip(out)) {
+      if (skipcontext.skip(stepcontext)) {
         this.callv3(endpromise, ix + 1);
         return;
       }
     }
 
     // if parallel run, not wait step promise.
-    if (wrapper.ord() <= 0) {
-      this.runnableCall(piperunnable, out,
+    if (stepcontext.ord() <= 0) {
+      this.runnableCall(piperunnable, stepout,
         value -> this.release(ix, true,
           () -> {
-            VtmScopeContext.context(this.pipecycle.scope()).put(out, value);
+            VtmScopeContext.context(this.pipecycle.scope()).put(stepcontext, value);
             // parallel pipeline, should not set last step id
 
             if (ix + 1 < this.piperunnables.size()) {
@@ -193,7 +197,7 @@ class PipelineImpl implements Pipeline {
             }
 
             Set<PipeRunnable> ordset = this.piperunnables.stream()
-              .filter(runnable -> runnable.wrapper().ord() > 0)
+              .filter(runnable -> VtmStepContext.context(runnable.step()).ord() > 0)
               .collect(Collectors.toSet());
             // all pipeline are parallel pipeline, last pipeline call promise done.
             if (ordset.size() == 0) {
@@ -219,11 +223,11 @@ class PipelineImpl implements Pipeline {
     }
 
     // serial run, wait step promise.
-    this.runnableCall(piperunnable, out,
+    this.runnableCall(piperunnable, stepout,
       value -> this.release(ix, true,
         () -> {
-          VtmScopeContext.context(this.pipecycle.scope()).put(out, value);
-          VtmScopeContext.context(this.pipecycle.scope()).last(out);
+          VtmScopeContext.context(this.pipecycle.scope()).put(stepcontext, value);
+          VtmScopeContext.context(this.pipecycle.scope()).last(stepcontext);
 
           this.callv3(endpromise, ix + 1);
         },

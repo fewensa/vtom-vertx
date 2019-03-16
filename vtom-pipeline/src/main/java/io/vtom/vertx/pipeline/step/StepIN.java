@@ -4,7 +4,7 @@ public interface StepIN {
 
   StepIN skip(StepSkip stepskip);
 
-  <I extends StepIN> StepOUT out(StepWrapper<I> wrapper);
+  StepOUT out();
 
 
 }

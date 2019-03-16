@@ -12,14 +12,13 @@ import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.UpdateResult;
 import io.vtom.vertx.pipeline.PipeRunnable;
-import io.vtom.vertx.pipeline.Pipeline;
 import io.vtom.vertx.pipeline.component.db.page.Page;
 import io.vtom.vertx.pipeline.component.db.sql.TSql;
 import io.vtom.vertx.pipeline.component.db.sql.VTSout;
 import io.vtom.vertx.pipeline.component.db.sql.psql.IPSql;
 import io.vtom.vertx.pipeline.component.db.sql.psql.PSql;
 import io.vtom.vertx.pipeline.component.db.sql.reporter.ISqlReporter;
-import io.vtom.vertx.pipeline.step.StepWrapper;
+import io.vtom.vertx.pipeline.step.Step;
 import io.vtom.vertx.pipeline.tk.Pvtk;
 
 import java.util.Collections;
@@ -27,21 +26,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 class VtomDBPipeRunnable implements PipeRunnable<TSql, VTSout> {
 
-  private Pipeline pipeline;
   private JDBCClient client;
-  private StepWrapper<? extends TSql> wrapper;
+  private Step<? extends TSql> step;
   private Kv shared;
 
-  VtomDBPipeRunnable(Pipeline pipeline, JDBCClient client, StepWrapper<? extends TSql> wrapper, Kv shared) {
-    this.pipeline = pipeline;
+  VtomDBPipeRunnable(JDBCClient client, Step<? extends TSql> step, Kv shared) {
     this.client = client;
-    this.wrapper = wrapper;
+    this.step = step;
     this.shared = shared;
   }
 
   @Override
-  public StepWrapper<? extends TSql> wrapper() {
-    return this.wrapper;
+  public Step<? extends TSql> step() {
+    return this.step;
   }
 
   @Override
@@ -132,11 +129,6 @@ class VtomDBPipeRunnable implements PipeRunnable<TSql, VTSout> {
   private void vrun2(SQLConnection conn, VTSout output, Handler<AsyncResult<Object>> handler) {
     String sql = output.sql();
     JsonArray paras = output.paras();
-
-//    if (output.skipNoParas() && (paras == null || paras.isEmpty())) {
-//      handler.handle(Future.succeededFuture());
-//      return;
-//    }
 
     String reportmark = this.reportMark(output);
 
