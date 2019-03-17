@@ -2,7 +2,7 @@ package io.vtom.vertx.pipeline.component.fs.action;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.file.FileSystem;
+import io.vertx.core.Vertx;
 import io.vtom.vertx.pipeline.tk.Pvtk;
 
 public class VtmFsChmodRecursive extends AbstractFsAction<VtmFsChmodRecursive> {
@@ -24,8 +24,8 @@ public class VtmFsChmodRecursive extends AbstractFsAction<VtmFsChmodRecursive> {
   public VtmFsOut out() {
     return new AbstractVtmFsOut(stepskips()) {
       @Override
-      public void execute(FileSystem fs, Handler<AsyncResult<Object>> handler) {
-        fs.chmodRecursive(path(), perms, dirPerms, Pvtk.handleTo(handler));
+      public void execute(Vertx vertx, Handler<AsyncResult<Object>> handler) {
+        vertx.fileSystem().chmodRecursive(path(), perms, dirPerms, Pvtk.handleTo(handler));
       }
     };
   }

@@ -3,8 +3,6 @@ package io.vtom.vertx.pipeline.component.periodic;
 import io.vertx.core.*;
 import io.vtom.vertx.pipeline.step.StepOUT;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 public class VtmPeriodicStream extends AbstractPeriodic<VtmPeriodicStream> {
 
   private long delay;
@@ -42,7 +40,7 @@ public class VtmPeriodicStream extends AbstractPeriodic<VtmPeriodicStream> {
   public StepOUT out() {
     return new VtmPeriodicOut(stepskips()) {
       @Override
-      protected void execute(Vertx vertx, Handler<AsyncResult<Object>> _handler) {
+      public void execute(Vertx vertx, Handler<AsyncResult<Object>> _handler) {
         TimeoutStream stream = vertx.periodicStream(delay);
         if (exceptionHandler != null)
           stream.exceptionHandler(exceptionHandler);
@@ -50,19 +48,10 @@ public class VtmPeriodicStream extends AbstractPeriodic<VtmPeriodicStream> {
           stream.endHandler(endHandler);
         if (fetch != null)
           stream.fetch(fetch);
+        if (handler != null)
+          stream.handler(handler);
 
-        AtomicBoolean ab = new AtomicBoolean(false);
-        stream.handler(id -> {
-
-          if (!ab.get()) {
-            _handler.handle(Future.succeededFuture(stream));
-            ab.set(true);
-          }
-
-          if (handler != null)
-            handler.handle(id);
-        });
-
+        _handler.handle(Future.succeededFuture(stream));
       }
     };
   }

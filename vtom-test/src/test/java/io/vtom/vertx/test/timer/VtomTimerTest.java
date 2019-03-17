@@ -23,7 +23,7 @@ public class VtomTimerTest {
   public void setUp() throws Exception {
     this.vertx = Vertx.vertx();
     this.suite = TestSuite.create("timer");
-    this.vtomtimer = VtomTimer.with(this.vertx);
+    this.vtomtimer = VtomTimer.create();
   }
 
 
@@ -31,7 +31,7 @@ public class VtomTimerTest {
   public void testSubmitParallel() {
     this.suite.test("submit.parallel", ctx -> {
       Async async = ctx.async();
-      this.vtomtimer.component()
+      this.vtomtimer.dependency(this.vertx)
         .step(Step.with(lifecycle -> Timer.submit(System.out::println).delay(100)).id("timer.parallel"))
         .join()
         .enqueue()
@@ -39,14 +39,13 @@ public class VtomTimerTest {
         .always(async::complete);// always scope never call. because parallel Timer submit will return immediately
       async.awaitSuccess();
     }).run(new TestOptions().setTimeout(1000));
-
   }
 
   @Test
   public void testSubmitSerial() {
     this.suite.test("submit.serial", ctx -> {
       Async async = ctx.async();
-      this.vtomtimer.component()
+      this.vtomtimer.dependency(this.vertx)
         .step(Step.with(lifecycle -> Timer.submit(System.out::println).delay(100)).ord(1))
         .join()
         .enqueue()
@@ -61,7 +60,7 @@ public class VtomTimerTest {
     this.suite.test("stream", ctx -> {
       Async async = ctx.async();
       // always scope never call. because parallel Timer submit will return immediately
-      this.vtomtimer.component()
+      this.vtomtimer.dependency(this.vertx)
         .step(Step.with(lifecycle -> Timer.stream(100).handler(id -> {
           System.out.println(id);
           Scope scope = lifecycle.scope();

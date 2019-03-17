@@ -2,6 +2,7 @@ package io.vtom.vertx.pipeline.component.fs.action;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.file.CopyOptions;
 import io.vertx.core.file.FileSystem;
 import io.vtom.vertx.pipeline.tk.Pvtk;
@@ -39,7 +40,8 @@ public class VtmFsCopy extends AbstractFsAction<VtmFsCopy> {
   public VtmFsOut out() {
     return new AbstractVtmFsOut(stepskips()) {
       @Override
-      public void execute(FileSystem fs, Handler<AsyncResult<Object>> handler) {
+      public void execute(Vertx vertx, Handler<AsyncResult<Object>> handler) {
+        FileSystem fs = vertx.fileSystem();
         if (recursive) {
           fs.copyRecursive(path(), to, recursive, Pvtk.handleTo(handler));
           return;

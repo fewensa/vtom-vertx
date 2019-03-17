@@ -8,25 +8,21 @@ import io.vtom.vertx.pipeline.component.fs.action.Fs;
 public class VtomFileSystem implements PipeComponent<Fs> {
 
 
-  private Vertx vertx;
-
-
-  public VtomFileSystem(Vertx vertx) {
-    this.vertx = vertx;
+  public VtomFileSystem() {
   }
 
-  public static VtomFileSystem with(Vertx vertx) {
-    return new VtomFileSystem(vertx);
+  public static VtomFileSystem create() {
+    return new VtomFileSystem();
   }
 
   @Override
-  public VtomFileSystemStep component() {
-    return this.dependency(Pipeline.pipeline());
+  public VtomFileSystemStep dependency(Vertx vertx) {
+    return this.dependency(Pipeline.pipeline(vertx));
   }
 
   @Override
   public VtomFileSystemStep dependency(Pipeline pipeline) {
-    return new VtomFileSystemStep(this.vertx, pipeline);
+    return new VtomFileSystemStep(pipeline);
   }
 
 }

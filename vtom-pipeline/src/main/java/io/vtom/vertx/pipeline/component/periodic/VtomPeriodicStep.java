@@ -1,7 +1,6 @@
 package io.vtom.vertx.pipeline.component.periodic;
 
 import io.enoa.toolkit.collection.CollectionKit;
-import io.vertx.core.Vertx;
 import io.vtom.vertx.pipeline.PipeStep;
 import io.vtom.vertx.pipeline.Pipeline;
 import io.vtom.vertx.pipeline.step.Step;
@@ -12,12 +11,10 @@ import java.util.List;
 
 public class VtomPeriodicStep implements PipeStep<Periodic> {
 
-  private Vertx vertx;
   private Pipeline pipeline;
   private List<Step<? extends Periodic>> steps;
 
-  public VtomPeriodicStep(Vertx vertx, Pipeline pipeline) {
-    this.vertx = vertx;
+  public VtomPeriodicStep(Pipeline pipeline) {
     this.pipeline = pipeline;
   }
 
@@ -41,7 +38,7 @@ public class VtomPeriodicStep implements PipeStep<Periodic> {
     if (CollectionKit.isEmpty(this.steps))
       return this.pipeline;
     this.steps.forEach(step -> {
-      VtomPeriodicRunnable runnable = new VtomPeriodicRunnable(this.vertx, step);
+      VtomPeriodicRunnable runnable = new VtomPeriodicRunnable(this.pipeline.lifecycle().vertx(), step);
       this.pipeline.next(runnable);
     });
     return this.pipeline;

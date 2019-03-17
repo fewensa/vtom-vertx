@@ -6,8 +6,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vtom.vertx.pipeline.step.StepOUT;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 public class VtmPeriodicSubmit extends AbstractPeriodic<VtmPeriodicSubmit> {
 
   private long delay;
@@ -26,16 +24,9 @@ public class VtmPeriodicSubmit extends AbstractPeriodic<VtmPeriodicSubmit> {
   public StepOUT out() {
     return new VtmPeriodicOut(stepskips()) {
       @Override
-      protected void execute(Vertx vertx, Handler<AsyncResult<Object>> _handler) {
-        AtomicBoolean calledHandler = new AtomicBoolean(false);
-        vertx.setPeriodic(delay, id -> {
-          if (!calledHandler.get()) {
-            _handler.handle(Future.succeededFuture(id));
-            calledHandler.set(true);
-          }
-          if (handler != null)
-            handler.handle(id);
-        });
+      public void execute(Vertx vertx, Handler<AsyncResult<Object>> _handler) {
+        long id = vertx.setPeriodic(delay, handler);
+        _handler.handle(Future.succeededFuture(id));
       }
     };
   }

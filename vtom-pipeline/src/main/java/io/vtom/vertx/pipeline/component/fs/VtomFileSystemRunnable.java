@@ -5,7 +5,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.file.FileSystem;
 import io.vtom.vertx.pipeline.PipeRunnable;
 import io.vtom.vertx.pipeline.component.fs.action.Fs;
 import io.vtom.vertx.pipeline.component.fs.action.VtmFsOut;
@@ -30,8 +29,7 @@ class VtomFileSystemRunnable implements PipeRunnable<Fs, VtmFsOut> {
 
   @Override
   public void call(VtmFsOut stepout, Handler<AsyncResult<Object>> handler) {
-    FileSystem fs = this.vertx.fileSystem();
-    stepout.execute(fs, handler);
+    stepout.execute(this.vertx, handler);
   }
 
   @Override

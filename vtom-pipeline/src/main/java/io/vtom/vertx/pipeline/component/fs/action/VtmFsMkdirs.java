@@ -2,6 +2,7 @@ package io.vtom.vertx.pipeline.component.fs.action;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
 import io.vtom.vertx.pipeline.tk.Pvtk;
 
@@ -22,7 +23,8 @@ public class VtmFsMkdirs extends AbstractFsAction<VtmFsMkdirs> {
   public VtmFsOut out() {
     return new AbstractVtmFsOut(stepskips()) {
       @Override
-      public void execute(FileSystem fs, Handler<AsyncResult<Object>> handler) {
+      public void execute(Vertx vertx, Handler<AsyncResult<Object>> handler) {
+        FileSystem fs = vertx.fileSystem();
         if (perms == null) {
           fs.mkdirs(path(), Pvtk.handleTo(handler));
           return;

@@ -346,7 +346,7 @@ public class VtomFileSystemTest {
     this.suite.test("vtom.read", ctx -> {
       Async async = ctx.async();
       long start = System.currentTimeMillis();
-      VtomFileSystem.with(this.vertx).component()
+      VtomFileSystem.create().dependency(this.vertx)
         .step(Step.with(lifecycle -> Fs.exists(testDir)).ord(1))
         .step(Step.with(lifecycle -> {
           Scope scope = lifecycle.scope();

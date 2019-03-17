@@ -9,6 +9,7 @@ import io.enoa.toolkit.collection.CollectionKit;
 import io.enoa.toolkit.eo.tip.EnoaTipKit;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vtom.vertx.pipeline.lifecycle.PipeLifecycle;
 import io.vtom.vertx.pipeline.lifecycle.scope.Scope;
 import io.vtom.vertx.pipeline.lifecycle.scope.VtmScopeContext;
@@ -17,6 +18,7 @@ import io.vtom.vertx.pipeline.step.*;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 class PipelineImpl implements Pipeline {
@@ -29,16 +31,16 @@ class PipelineImpl implements Pipeline {
   }
 
   private PipeLifecycle pipecycle;
-  private Stat stat;
+  private AtomicReference<Stat> stat;
   private AtomicBoolean alwayscalled;
 
   private List<PipeRunnable> piperunnables;
 
 
-  PipelineImpl(Scope scope) {
-    this.pipecycle = new PipeLifecycle(scope);
+  PipelineImpl(Vertx vertx) {
+    this.pipecycle = new PipeLifecycle(vertx, Scope.scope());
     this.piperunnables = null;
-    this.stat = Stat.WAIT;
+    this.stat = new AtomicReference<>(Stat.WAIT);
     this.alwayscalled = new AtomicBoolean(Boolean.FALSE);
   }
 
@@ -70,7 +72,7 @@ class PipelineImpl implements Pipeline {
 
   @Override
   public PipePromise enqueue() {
-    this.stat = Stat.RUN;
+    this.stat.set(Stat.RUN);
 
     EPDoneArgPromiseBuilder<PipeLifecycle> promise = Promise.builder().donearg();
     PipePromise _ret = new PipePromise(promise.build());
@@ -82,8 +84,9 @@ class PipelineImpl implements Pipeline {
 
     this.recheck();
 
-//    this.callv2(promise, 0, null);
-    this.callv3(promise, 0);
+    this.pipecycle.vertx()
+      .getOrCreateContext()
+      .runOnContext(v -> this.callv3(promise, 0));
     return _ret;
   }
 
@@ -133,9 +136,7 @@ class PipelineImpl implements Pipeline {
   private void callv3(EPDoneArgPromiseBuilder<PipeLifecycle> endpromise, int ix) {
 
     // if pipeline status is STOP, end call
-    if (this.stat == Stat.STOP) {
-      this.stat = Stat.END;
-
+    if (this.stat.getAndSet(Stat.END) == Stat.STOP) {
       if (!this.alwayscalled.get())
         Promise.builder().handler().handleAlways(endpromise);
       this.alwayscalled.set(Boolean.TRUE);
@@ -215,7 +216,8 @@ class PipelineImpl implements Pipeline {
           },
           thr1 -> this.captureCall(endpromise, thr1)),
         thr0 -> {
-          this.stat = Stat.STOP;
+//          this.stat = Stat.STOP;
+          this.stat.set(Stat.STOP);
           this.release(ix, false,
             () -> this.captureCall(endpromise, thr0),
             thr1 -> {

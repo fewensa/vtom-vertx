@@ -2,7 +2,6 @@ package io.vtom.vertx.pipeline.component.fs;
 
 import io.enoa.toolkit.collection.CollectionKit;
 import io.enoa.toolkit.map.Kv;
-import io.vertx.core.Vertx;
 import io.vtom.vertx.pipeline.PipeRunnable;
 import io.vtom.vertx.pipeline.PipeStep;
 import io.vtom.vertx.pipeline.Pipeline;
@@ -17,12 +16,10 @@ import java.util.List;
 public class VtomFileSystemStep implements PipeStep<Fs> {
 
   private Pipeline pipeline;
-  private Vertx vertx;
   private List<Step<? extends Fs>> steps;
   private Kv shared;
 
-  public VtomFileSystemStep(Vertx vertx, Pipeline pipeline) {
-    this.vertx = vertx;
+  public VtomFileSystemStep(Pipeline pipeline) {
     this.pipeline = pipeline;
   }
 
@@ -48,6 +45,6 @@ public class VtomFileSystemStep implements PipeStep<Fs> {
   }
 
   private PipeRunnable<Fs, VtmFsOut> piperunable(Step<? extends Fs> step) {
-    return new VtomFileSystemRunnable(this.vertx, step, this.shared);
+    return new VtomFileSystemRunnable(this.pipeline.lifecycle().vertx(), step, this.shared);
   }
 }

@@ -27,7 +27,7 @@ public class VtomPeriodicTest {
   public void setUp() throws Exception {
     this.vertx = Vertx.vertx();
     this.suite = TestSuite.create("periodic");
-    this.vtomperiodic = VtomPeriodic.with(this.vertx);
+    this.vtomperiodic = VtomPeriodic.create();
   }
 
 
@@ -35,7 +35,7 @@ public class VtomPeriodicTest {
   public void testSubmitParallel() {
     this.suite.test("submit.parallel", ctx -> {
       Async async = ctx.async();
-      this.vtomperiodic.component()
+      this.vtomperiodic.dependency(this.vertx)
         .step(Step.with(lifecycle -> Periodic.submit(System.out::println).delay(100)).id("periodic.parallel"))
         .join()
         .enqueue()
@@ -49,7 +49,7 @@ public class VtomPeriodicTest {
   public void testSubmitSerial() {
     this.suite.test("submit.serial", ctx -> {
       Async async = ctx.async();
-      this.vtomperiodic.component()
+      this.vtomperiodic.dependency(this.vertx)
         .step(Step.with(lifecycle -> Periodic.submit(System.out::println).delay(100)).ord(1))
         .join()
         .enqueue()
@@ -65,7 +65,7 @@ public class VtomPeriodicTest {
       Async async = ctx.async();
       AtomicInteger ai = new AtomicInteger();
       // always scope never call. because parallel Periodic submit will return immediately
-      this.vtomperiodic.component()
+      this.vtomperiodic.dependency(this.vertx)
         .step(Step.with(lifecycle -> Periodic.stream(100).handler(id -> {
           int i = ai.addAndGet(1);
           System.out.println(i);
@@ -88,13 +88,13 @@ public class VtomPeriodicTest {
     this.suite.test("submit.parallel", ctx -> {
       Async async = ctx.async();
 
-      Pipeline pipeline = Pipeline.pipeline();
+      Pipeline pipeline = Pipeline.pipeline(this.vertx);
 
       this.vtomperiodic.dependency(pipeline)
         .step(Step.with(lifecycle -> Periodic.submit(System.out::println).delay(100)).id("periodic.parallel"))
         .join();
 
-      VtomTimer.with(this.vertx).dependency(pipeline)
+      VtomTimer.create().dependency(pipeline)
         .step(lifecycle -> Timer.submit(id -> {
           Long pid = lifecycle.scope().value("periodic.parallel").as();
           this.vertx.cancelTimer(pid);

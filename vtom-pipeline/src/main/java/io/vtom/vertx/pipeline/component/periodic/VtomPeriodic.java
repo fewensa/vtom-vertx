@@ -7,23 +7,21 @@ import io.vtom.vertx.pipeline.Pipeline;
 public class VtomPeriodic implements PipeComponent<Periodic> {
 
 
-  private Vertx vertx;
 
-  public VtomPeriodic(Vertx vertx) {
-    this.vertx = vertx;
+  public VtomPeriodic() {
   }
 
-  public static VtomPeriodic with(Vertx vertx) {
-    return new VtomPeriodic(vertx);
+  public static VtomPeriodic create() {
+    return new VtomPeriodic();
   }
 
   @Override
-  public VtomPeriodicStep component() {
-    return this.dependency(Pipeline.pipeline());
+  public VtomPeriodicStep dependency(Vertx vertx) {
+    return this.dependency(Pipeline.pipeline(vertx));
   }
 
   @Override
   public VtomPeriodicStep dependency(Pipeline pipeline) {
-    return new VtomPeriodicStep(this.vertx, pipeline);
+    return new VtomPeriodicStep(pipeline);
   }
 }

@@ -1,7 +1,6 @@
 package io.vtom.vertx.pipeline.component.timer;
 
 import io.enoa.toolkit.collection.CollectionKit;
-import io.vertx.core.Vertx;
 import io.vtom.vertx.pipeline.PipeStep;
 import io.vtom.vertx.pipeline.Pipeline;
 import io.vtom.vertx.pipeline.step.Step;
@@ -12,12 +11,10 @@ import java.util.List;
 
 public class VtomTimerStep implements PipeStep<Timer> {
 
-  private Vertx vertx;
   private Pipeline pipeline;
   private List<Step<? extends Timer>> steps;
 
-  public VtomTimerStep(Vertx vertx, Pipeline pipeline) {
-    this.vertx = vertx;
+  public VtomTimerStep(Pipeline pipeline) {
     this.pipeline = pipeline;
   }
 
@@ -41,7 +38,7 @@ public class VtomTimerStep implements PipeStep<Timer> {
     if (CollectionKit.isEmpty(this.steps))
       return this.pipeline;
     this.steps.forEach(step -> {
-      VtomTimerRunnable runnable = new VtomTimerRunnable(this.vertx, step);
+      VtomTimerRunnable runnable = new VtomTimerRunnable(this.pipeline.lifecycle().vertx(), step);
       this.pipeline.next(runnable);
     });
     return this.pipeline;

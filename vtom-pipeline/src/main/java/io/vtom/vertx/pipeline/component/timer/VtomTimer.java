@@ -7,23 +7,21 @@ import io.vtom.vertx.pipeline.Pipeline;
 
 public class VtomTimer implements PipeComponent<Timer> {
 
-  private Vertx vertx;
 
-  public VtomTimer(Vertx vertx) {
-    this.vertx = vertx;
+  public VtomTimer() {
   }
 
-  public static VtomTimer with(Vertx vertx) {
-    return new VtomTimer(vertx);
+  public static VtomTimer create() {
+    return new VtomTimer();
   }
 
   @Override
-  public PipeStep<Timer> component() {
-    return this.dependency(Pipeline.pipeline());
+  public PipeStep<Timer> dependency(Vertx vertx) {
+    return this.dependency(Pipeline.pipeline(vertx));
   }
 
   @Override
   public PipeStep<Timer> dependency(Pipeline pipeline) {
-    return new VtomTimerStep(this.vertx, pipeline);
+    return new VtomTimerStep(pipeline);
   }
 }

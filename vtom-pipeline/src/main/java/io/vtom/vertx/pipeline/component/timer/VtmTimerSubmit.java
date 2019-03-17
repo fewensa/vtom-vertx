@@ -6,8 +6,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vtom.vertx.pipeline.step.StepOUT;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 public class VtmTimerSubmit extends AbstractTimer<VtmTimerSubmit> {
 
   private long delay;
@@ -26,16 +24,9 @@ public class VtmTimerSubmit extends AbstractTimer<VtmTimerSubmit> {
   public StepOUT out() {
     return new VtmTimerOut(stepskips()) {
       @Override
-      protected void execute(Vertx vertx, Handler<AsyncResult<Object>> _handler) {
-        AtomicBoolean calledHandler = new AtomicBoolean(false);
-        vertx.setTimer(delay, id -> {
-          if (!calledHandler.get()) {
-            _handler.handle(Future.succeededFuture(id));
-            calledHandler.set(true);
-          }
-          if (handler != null)
-            handler.handle(id);
-        });
+      public void execute(Vertx vertx, Handler<AsyncResult<Object>> _handler) {
+        long id = vertx.setTimer(delay, handler);
+        _handler.handle(Future.succeededFuture(id));
       }
     };
   }

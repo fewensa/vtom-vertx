@@ -2,7 +2,7 @@ package io.vtom.vertx.pipeline.component.fs.action;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.file.FileSystem;
+import io.vertx.core.Vertx;
 import io.vtom.vertx.pipeline.tk.Pvtk;
 
 public class VtmFsProps extends AbstractFsAction<VtmFsProps> {
@@ -15,8 +15,8 @@ public class VtmFsProps extends AbstractFsAction<VtmFsProps> {
   public VtmFsOut out() {
     return new AbstractVtmFsOut(stepskips()) {
       @Override
-      public void execute(FileSystem fs, Handler<AsyncResult<Object>> handler) {
-        fs.props(path(), Pvtk.handleTo(handler));
+      public void execute(Vertx vertx, Handler<AsyncResult<Object>> handler) {
+        vertx.fileSystem().props(path(), Pvtk.handleTo(handler));
       }
     };
   }

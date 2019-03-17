@@ -1,5 +1,6 @@
 package io.vtom.vertx.pipeline.component.db;
 
+import io.vertx.core.Vertx;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vtom.vertx.pipeline.PipeComponent;
 import io.vtom.vertx.pipeline.Pipeline;
@@ -18,8 +19,8 @@ public class VtomDB implements PipeComponent<TSql> {
   }
 
   @Override
-  public VtomDBStep component() {
-    return this.dependency(Pipeline.pipeline());
+  public VtomDBStep dependency(Vertx vertx) {
+    return this.dependency(Pipeline.pipeline(vertx));
   }
 
   @Override

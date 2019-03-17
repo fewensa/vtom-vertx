@@ -18,7 +18,7 @@ public class VtmPeriodicCancel extends AbstractPeriodic<VtmPeriodicCancel> {
   public StepOUT out() {
     return new VtmPeriodicOut(stepskips()) {
       @Override
-      protected void execute(Vertx vertx, Handler<AsyncResult<Object>> handler) {
+      public void execute(Vertx vertx, Handler<AsyncResult<Object>> handler) {
         boolean ok = vertx.cancelTimer(id);
         handler.handle(Future.succeededFuture(ok));
       }

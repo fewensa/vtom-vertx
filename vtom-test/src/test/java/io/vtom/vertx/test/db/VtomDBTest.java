@@ -59,7 +59,7 @@ public class VtomDBTest {
     this.suite.test("ord", ctx -> {
       Async async = ctx.async();
 
-      this.vtomdb.component()
+      this.vtomdb.dependency(this.vertx)
         .tx()
         .step(Step.with(cycle -> {
           System.out.println(11111);
@@ -98,7 +98,7 @@ public class VtomDBTest {
     this.suite.test("tsql", ctx -> {
       Async async = ctx.async();
 
-      this.vtomdb.component()
+      this.vtomdb.dependency(this.vertx)
         .step(Step.with(cycle -> TSql.template().select("Tpl.mediaList", 1, 10)).ord(1))
         .step(Step.with(cycle -> TSql.template().select("Tpl.tagList")).ord(2))
         .join()

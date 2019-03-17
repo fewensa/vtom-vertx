@@ -1,6 +1,7 @@
 package io.vtom.vertx.pipeline.component.fs.action;
 
 import io.vtom.vertx.pipeline.step.StepIN;
+import io.vtom.vertx.pipeline.step.StepOUT;
 import io.vtom.vertx.pipeline.step.StepSkip;
 
 public interface Fs extends StepIN {
@@ -101,5 +102,5 @@ public interface Fs extends StepIN {
   Fs skip(StepSkip stepskip);
 
   @Override
-  VtmFsOut out();
+  StepOUT out();
 }
