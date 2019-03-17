@@ -98,7 +98,7 @@ public interface Fs extends StepIN {
   }
 
   @Override
-  StepIN skip(StepSkip stepskip);
+  Fs skip(StepSkip stepskip);
 
   @Override
   VtmFsOut out();
