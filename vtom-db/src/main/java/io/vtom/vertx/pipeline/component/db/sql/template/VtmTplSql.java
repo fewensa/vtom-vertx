@@ -9,7 +9,7 @@ import io.vtom.vertx.pipeline.component.db.sql.psql.IPSql;
 import io.vtom.vertx.pipeline.component.db.sql.reporter.ISqlReporter;
 
 
-public class TplSql extends AbstractTSql<TplSql> {
+public class VtmTplSql extends AbstractTSql<VtmTplSql> {
 
 
   private TSqlOptions options;
@@ -22,51 +22,51 @@ public class TplSql extends AbstractTSql<TplSql> {
   private int pn;
   private boolean pageSelect;
 
-  private TplSql(String cfgname) {
+  private VtmTplSql(String cfgname) {
     this.options = TSql.epm().options(cfgname);
   }
 
-  static TplSql with(String cfgname) {
-    return new TplSql(cfgname);
+  static VtmTplSql with(String cfgname) {
+    return new VtmTplSql(cfgname);
   }
 
 
-  TplSql action(SqlAction action) {
+  VtmTplSql action(SqlAction action) {
     this.action = action;
     return this;
   }
 
-  TplSql sqlname(String sqlname) {
+  VtmTplSql sqlname(String sqlname) {
     this.sqlname = sqlname;
     return this;
   }
 
-  TplSql ipsql(IPSql ipsql) {
+  VtmTplSql ipsql(IPSql ipsql) {
     this.ipsql = ipsql;
     return this;
   }
 
-  TplSql ps(int ps) {
+  VtmTplSql ps(int ps) {
     this.ps = ps;
     return this;
   }
 
-  TplSql pn(int pn) {
+  VtmTplSql pn(int pn) {
     this.pn = pn;
     return this;
   }
 
-  TplSql pageSelect() {
+  VtmTplSql pageSelect() {
     return this.pageSelect(Boolean.TRUE);
   }
 
-  TplSql pageSelect(boolean pageSelect) {
+  VtmTplSql pageSelect(boolean pageSelect) {
     this.pageSelect = pageSelect;
     return this;
   }
 
 
-  public TplSql para(Kv kv) {
+  public VtmTplSql para(Kv kv) {
     this.parakv = kv;
     return this;
   }

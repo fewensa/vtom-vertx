@@ -1,7 +1,7 @@
 package io.vtom.vertx.pipeline.component.db.sql;
 
 import io.vtom.vertx.pipeline.component.db.sql.dsql.DSqlAction;
-import io.vtom.vertx.pipeline.component.db.sql.template.TplAction;
+import io.vtom.vertx.pipeline.component.db.sql.template.VtmTplAction;
 import io.vtom.vertx.pipeline.step.StepIN;
 import io.vtom.vertx.pipeline.step.StepSkip;
 
@@ -19,11 +19,11 @@ public interface TSql extends StepIN {
     return epm().dsqlaction(name);
   }
 
-  static TplAction template() {
+  static VtmTplAction template() {
     return epm().tplaction();
   }
 
-  static TplAction template(String name) {
+  static VtmTplAction template(String name) {
     return epm().tplaction(name);
   }
 

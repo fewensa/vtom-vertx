@@ -1,7 +1,7 @@
 package io.vtom.vertx.pipeline.component.db.sql;
 
 import io.vtom.vertx.pipeline.component.db.sql.dsql.DSqlAction;
-import io.vtom.vertx.pipeline.component.db.sql.template.TplAction;
+import io.vtom.vertx.pipeline.component.db.sql.template.VtmTplAction;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +17,7 @@ public class EPMTSql {
   }
 
   private Map<String, TSqlOptions> optionsmap;
-  private Map<String, TplAction> actionmap;
+  private Map<String, VtmTplAction> actionmap;
   private Map<String, DSqlAction> dsqlmap;
 
   private EPMTSql() {
@@ -42,12 +42,12 @@ public class EPMTSql {
     return this.optionsmap.get(name);
   }
 
-  TplAction tplaction() {
+  VtmTplAction tplaction() {
     return this.tplaction("main");
   }
 
-  TplAction tplaction(String name) {
-    return this.actionmap.computeIfAbsent(name, key -> new TplAction(name));
+  VtmTplAction tplaction(String name) {
+    return this.actionmap.computeIfAbsent(name, key -> new VtmTplAction(name));
   }
 
   DSqlAction dsqlaction() {
