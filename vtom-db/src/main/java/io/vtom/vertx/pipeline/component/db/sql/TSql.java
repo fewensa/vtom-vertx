@@ -1,9 +1,10 @@
 package io.vtom.vertx.pipeline.component.db.sql;
 
+import io.vertx.core.Handler;
 import io.vtom.vertx.pipeline.component.db.sql.dsql.DSqlAction;
 import io.vtom.vertx.pipeline.component.db.sql.template.VtmTplAction;
+import io.vtom.vertx.pipeline.lifecycle.skip.Skip;
 import io.vtom.vertx.pipeline.step.StepIN;
-import io.vtom.vertx.pipeline.step.StepSkip;
 
 public interface TSql extends StepIN {
 
@@ -28,7 +29,7 @@ public interface TSql extends StepIN {
   }
 
   @Override
-  StepIN skip(StepSkip stepskip);
+  StepIN skip(Handler<Skip> stepskip);
 
   @Override
   VTSout out();

@@ -1,19 +1,17 @@
 package io.vtom.vertx.pipeline.component.http.client;
 
 import io.enoa.toolkit.EoConst;
-import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
 import io.vtom.vertx.pipeline.component.http.client.enoa.HttpCookie;
 import io.vtom.vertx.pipeline.component.http.client.enoa.HttpFormData;
 import io.vtom.vertx.pipeline.component.http.client.enoa.HttpHeader;
 import io.vtom.vertx.pipeline.component.http.client.enoa.HttpPara;
 import io.vtom.vertx.pipeline.component.http.client.enoa.proxy.HttpProxy;
-import io.vtom.vertx.pipeline.step.StepSkip;
+import io.vtom.vertx.pipeline.lifecycle.skip.Skip;
 
-import java.io.FileNotFoundException;
 import java.lang.reflect.Array;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -33,7 +31,7 @@ class VhcImpl implements Vhc {
   private List<HttpFormData> formDatas;
   private Set<HttpCookie> cookies;
   private boolean absolute;
-  private List<StepSkip> stepskips;
+  private List<Handler<Skip>> stepskips;
 
   VhcImpl() {
     this.method = HttpMethod.GET;
@@ -244,7 +242,7 @@ class VhcImpl implements Vhc {
   }
 
   @Override
-  public Vhc skip(StepSkip stepskip) {
+  public Vhc skip(Handler<Skip> stepskip) {
     if (this.stepskips == null)
       this.stepskips = new ArrayList<>();
     this.stepskips.add(stepskip);

@@ -1,9 +1,9 @@
 package io.vtom.vertx.pipeline.component.timer;
 
 import io.vertx.core.Handler;
+import io.vtom.vertx.pipeline.lifecycle.skip.Skip;
 import io.vtom.vertx.pipeline.step.StepIN;
 import io.vtom.vertx.pipeline.step.StepOUT;
-import io.vtom.vertx.pipeline.step.StepSkip;
 
 public interface Timer extends StepIN {
 
@@ -22,7 +22,7 @@ public interface Timer extends StepIN {
 
 
   @Override
-  Timer skip(StepSkip stepskip);
+  Timer skip(Handler<Skip> stepskip);
 
   @Override
   StepOUT out();

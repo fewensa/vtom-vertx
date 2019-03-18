@@ -1,11 +1,12 @@
 package io.vtom.vertx.pipeline.component.http.client;
 
+import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
 import io.vtom.vertx.pipeline.component.http.client.enoa.EoUrl;
 import io.vtom.vertx.pipeline.component.http.client.enoa.proxy.HttpProxy;
+import io.vtom.vertx.pipeline.lifecycle.skip.Skip;
 import io.vtom.vertx.pipeline.step.StepIN;
-import io.vtom.vertx.pipeline.step.StepSkip;
 
 import java.nio.charset.Charset;
 import java.util.Collection;
@@ -85,7 +86,7 @@ public interface Vhc extends StepIN {
   }
 
   @Override
-  Vhc skip(StepSkip stepskip);
+  Vhc skip(Handler<Skip> stepskip);
 
   @Override
   VtmHttpClientOUT out();

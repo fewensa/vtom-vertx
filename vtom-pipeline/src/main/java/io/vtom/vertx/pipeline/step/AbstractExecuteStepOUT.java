@@ -10,9 +10,9 @@ import java.util.List;
 
 public abstract class AbstractExecuteStepOUT implements StepOUT {
 
-  private List<StepSkip> skips;
+  private List<Handler<Skip>> skips;
 
-  public AbstractExecuteStepOUT(List<StepSkip> skips) {
+  public AbstractExecuteStepOUT(List<Handler<Skip>> skips) {
     this.skips = skips;
   }
 
@@ -20,7 +20,7 @@ public abstract class AbstractExecuteStepOUT implements StepOUT {
   public void skip(Skip skip) {
     if (CollectionKit.isEmpty(this.skips))
       return;
-    this.skips.forEach(stepskip -> stepskip.skip(skip));
+    this.skips.forEach(stepskip -> stepskip.handle(skip));
   }
 
   public abstract void execute(Vertx vertx, Handler<AsyncResult<Object>> handler);

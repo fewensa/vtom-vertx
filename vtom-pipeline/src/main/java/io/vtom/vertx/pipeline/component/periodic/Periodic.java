@@ -1,9 +1,9 @@
 package io.vtom.vertx.pipeline.component.periodic;
 
 import io.vertx.core.Handler;
+import io.vtom.vertx.pipeline.lifecycle.skip.Skip;
 import io.vtom.vertx.pipeline.step.StepIN;
 import io.vtom.vertx.pipeline.step.StepOUT;
-import io.vtom.vertx.pipeline.step.StepSkip;
 
 public interface Periodic extends StepIN {
 
@@ -20,7 +20,7 @@ public interface Periodic extends StepIN {
   }
 
   @Override
-  Periodic skip(StepSkip stepskip);
+  Periodic skip(Handler<Skip> stepskip);
 
   @Override
   StepOUT out();
