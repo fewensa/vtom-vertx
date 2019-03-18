@@ -9,64 +9,20 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>vtom-test</artifactId>
-
-
+  <artifactId>vtom-web-client</artifactId>
 
 
   <dependencies>
 
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-unit</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>42.2.5</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>io.enoa</groupId>
-      <artifactId>stove-firetpl-enjoy</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.alibaba</groupId>
-      <artifactId>druid</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
       <groupId>io.vtom</groupId>
-      <artifactId>vtom-db</artifactId>
+      <artifactId>vtom-pipeline</artifactId>
     </dependency>
 
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-core</artifactId>
       <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-jdbc-client</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>io.vtom</groupId>
-      <artifactId>vtom-web-client</artifactId>
     </dependency>
 
     <dependency>
@@ -140,9 +96,6 @@
 
     </plugins>
   </build>
-
-
-
 
 
 

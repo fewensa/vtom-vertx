@@ -14,7 +14,7 @@
     <module>vtom-db</module>
     <module>vtom-test</module>
     <module>vtom-redis</module>
-    <module>vtom-http</module>
+    <module>vtom-web-client</module>
   </modules>
 
 
@@ -77,6 +77,12 @@
       <dependency>
         <groupId>io.vtom</groupId>
         <artifactId>vtom-db</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.vtom</groupId>
+        <artifactId>vtom-web-client</artifactId>
         <version>${project.version}</version>
       </dependency>
 

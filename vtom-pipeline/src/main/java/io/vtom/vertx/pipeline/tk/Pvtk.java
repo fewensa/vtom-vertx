@@ -6,13 +6,13 @@ import io.vertx.core.Handler;
 
 public class Pvtk {
 
-  public static <T> Handler<AsyncResult<T>> handleTo(Handler<AsyncResult<Object>> handler) {
+  public static <T, J> Handler<AsyncResult<T>> handleTo(Handler<AsyncResult<J>> handler) {
     return ar -> {
       if (ar.failed()) {
         handler.handle(Future.failedFuture(ar.cause()));
         return;
       }
-      handler.handle(Future.succeededFuture(ar.result()));
+      handler.handle(Future.succeededFuture((J) ar.result()));
     };
   }
 

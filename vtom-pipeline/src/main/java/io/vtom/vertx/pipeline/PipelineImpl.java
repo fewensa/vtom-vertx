@@ -76,17 +76,25 @@ class PipelineImpl implements Pipeline {
 
     EPDoneArgPromiseBuilder<PipeLifecycle> promise = Promise.builder().donearg();
     PipePromise _ret = new PipePromise(promise.build());
-    if (CollectionKit.isEmpty(this.piperunnables)) {
-      if (promise.always() != null)
-        promise.always().execute();
-      return _ret;
-    }
 
-    this.recheck();
 
     this.pipecycle.vertx()
       .getOrCreateContext()
-      .runOnContext(v -> this.callv3(promise, 0));
+      .runOnContext(v -> {
+
+        if (CollectionKit.isEmpty(this.piperunnables)) {
+          // too fast returned
+          this.pipecycle.vertx().setTimer(100, id -> {
+            if (promise.always() != null)
+              promise.always().execute();
+          });
+          return;
+        }
+
+        this.recheck();
+        this.callv3(promise, 0);
+      });
+
     return _ret;
   }
 
