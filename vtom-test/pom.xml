@@ -75,6 +75,17 @@
       <optional>true</optional>
     </dependency>
 
+    <dependency>
+      <groupId>io.vtom</groupId>
+      <artifactId>vtom-redis</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-redis-client</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -124,6 +135,14 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <configuration>
+          <showSuccess>false</showSuccess>
+        </configuration>
       </plugin>
 
       <plugin>

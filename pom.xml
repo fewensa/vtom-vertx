@@ -48,6 +48,7 @@
     <version-plugin-dependency>2.10</version-plugin-dependency>
     <version-plugin-docker>0.4.14</version-plugin-docker>
     <version-plugin-shade>2.4.2</version-plugin-shade>
+    <version-plugin-cobertura>2.7</version-plugin-cobertura>
 
 
     <version-enoa>1.7-snapshot</version-enoa>
@@ -77,6 +78,12 @@
       <dependency>
         <groupId>io.vtom</groupId>
         <artifactId>vtom-db</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.vtom</groupId>
+        <artifactId>vtom-redis</artifactId>
         <version>${project.version}</version>
       </dependency>
 
@@ -245,6 +252,16 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
           <version>${version-plugin-shade}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>cobertura-maven-plugin</artifactId>
+          <version>${version-plugin-cobertura}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-report-plugin</artifactId>
+          <version>${version-plugin-surefire}</version>
         </plugin>
       </plugins>
     </pluginManagement>
