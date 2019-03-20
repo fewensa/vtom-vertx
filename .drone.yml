@@ -35,13 +35,15 @@ kind: pipeline
 name: install_local
 
 steps:
-  - name: test
+
+  - name: pg_setup
     image: postgres:11-alpine
     environment:
       PGPASSWORD: passwd
     commands:
       - sleep 5
       - psql -U postgres -d vtom -h database -f /drone/src/vtom-test/src/test/resources/schema/vtom.sql
+
   - name: install
     image: maven:3.6-alpine
     volumes:
@@ -63,23 +65,9 @@ volumes:
     host:
       path: /var/lib/mysql
 
-#services:
-#  - name: database
-#    image: postgres:11-alpine
-#    environment:
-#      POSTGRES_USER: postgres
-#      POSTGRES_DB: vtom
-#      POSTGRES_PASSWORD: passwd
-#    commands:
-#      - cp /drone/src/vtom-test/src/test/resources/schema/vtom.sql /docker-entrypoint-initdb.d/init.sql
-#      - sleep 5
-#      - psql -U postgres -d vtom -h localhost
-
 services:
   - name: database
     image: postgres:11-alpine
-    ports:
-      - 5432
     environment:
       POSTGRES_USER: postgres
       POSTGRES_DB: vtom
