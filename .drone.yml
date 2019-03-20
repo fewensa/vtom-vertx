@@ -41,7 +41,7 @@ steps:
       - name: m2
         path: /root/.m2
     environment:
-      DB_URL: jdbc:postgresql://database:5432/vtoud
+      DB_URL: jdbc:postgresql://database:5432/vtom
       DB_USER: postgres
       DB_PASSWD: passwd
       REDIS_HOST: redis
@@ -61,10 +61,10 @@ services:
     image: postgres:11-alpine
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_DB: vtoud
+      POSTGRES_DB: vtom
       POSTGRES_PASSWORD: passwd
     commands:
-      - ls /drone/src
+      - cp /drone/src/vtom-test/src/test/resources/schema/vtom.sql /docker-entrypoint-initdb.d/init.sql
 
 trigger:
   branch:
