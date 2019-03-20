@@ -37,8 +37,10 @@ name: install_local
 steps:
   - name: test
     image: postgres:11-alpine
+      links:
+        - database
     commands:
-      - sleep 15
+      - sleep 5
       - psql -U postgres -d vtom -h database
   - name: install
     image: maven:3.6-alpine
