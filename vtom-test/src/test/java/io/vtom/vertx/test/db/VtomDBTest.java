@@ -85,12 +85,6 @@ public class VtomDBTest {
 
       async.awaitSuccess();
 
-      try {
-        TimeUnit.SECONDS.sleep(5L);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-
     }).run(new TestOptions().addReporter(new ReportOptions().setTo("console")));
   }
 
