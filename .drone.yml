@@ -7,34 +7,6 @@ kind: pipeline
 name: maven_center
 
 steps:
-  - name: deploy
-    image: maven:3.6-alpine
-    volumes:
-      - name: m2
-        path: /root/.m2
-      - name: gpg
-        path: /root/.gnupg
-    commands:
-      - apk add gnupg
-      - mvn clean deploy -Dmaven.test.skip=true -Prelease
-
-volumes:
-  - name: m2
-    host:
-      path: /data/mount/m2
-  - name: gpg
-    host:
-      path: /data/gnupg
-
-trigger:
-  branch:
-    - master
-
----
-kind: pipeline
-name: install_local
-
-steps:
   - name: pg_setup
     image: postgres:11-alpine
     environment:
@@ -43,26 +15,29 @@ steps:
       - sleep 3
       - psql -U postgres -d vtom -h database -f /drone/src/vtom-test/src/test/resources/schema/vtom.sql
 
-  - name: install
+  - name: deploy
     image: maven:3.6-alpine
     volumes:
       - name: m2
         path: /root/.m2
+      - name: gpg
+        path: /root/.gnupg
     environment:
       DB_URL: jdbc:postgresql://database:5432/vtom
       DB_USER: postgres
       DB_PASSWD: passwd
       REDIS_HOST: redis
     commands:
-      - mvn clean install -Dmaven.javadoc.skip=true -Dgpg.skip=true #  -Dmaven.test.skip=true
+      - apk add gnupg
+      - mvn clean deploy -Prelease
 
 volumes:
   - name: m2
     host:
       path: /data/mount/m2
-  - name: sql
+  - name: gpg
     host:
-      path: /var/lib/mysql
+      path: /data/gnupg
 
 services:
   - name: database
@@ -74,6 +49,28 @@ services:
 
   - name: redis
     image: redis:4-alpine
+
+trigger:
+  branch:
+    - master
+
+---
+kind: pipeline
+name: install_local
+
+steps:
+  - name: install
+    image: maven:3.6-alpine
+    volumes:
+      - name: m2
+        path: /root/.m2
+    commands:
+      - mvn clean install -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dgpg.skip=true
+
+volumes:
+  - name: m2
+    host:
+      path: /data/mount/m2
 
 trigger:
   branch:
