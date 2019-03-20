@@ -7,7 +7,7 @@
   <groupId>io.vtom</groupId>
   <artifactId>vtom-vertx</artifactId>
   <packaging>pom</packaging>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0-beta</version>
 
   <modules>
     <module>vtom-pipeline</module>
