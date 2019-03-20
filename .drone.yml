@@ -71,7 +71,7 @@ services:
     commands:
       - cp /drone/src/vtom-test/src/test/resources/schema/vtom.sql /docker-entrypoint-initdb.d/init.sql
       - sleep 5
-      - psql -U postgres -d vtom -h database
+      - psql -U postgres -d vtom -h localhost
 
 trigger:
   branch:
