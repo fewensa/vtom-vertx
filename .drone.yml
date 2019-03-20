@@ -35,6 +35,11 @@ kind: pipeline
 name: install_local
 
 steps:
+  - name: test
+    image: postgres:11-alpine
+    commands:
+      - sleep 15
+      - psql -U postgres -d vtom -h database
   - name: install
     image: maven:3.6-alpine
     volumes:
