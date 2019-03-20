@@ -37,8 +37,8 @@ name: install_local
 steps:
   - name: test
     image: postgres:11-alpine
-      links:
-        - database
+    links:
+      - database
     commands:
       - sleep 5
       - psql -U postgres -d vtom -h database
