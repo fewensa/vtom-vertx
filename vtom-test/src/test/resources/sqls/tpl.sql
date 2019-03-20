@@ -1,7 +1,7 @@
 
 
-#section('mediaList')
-select * from t_media
+#section('articleList')
+select * from t_article
 #end
 
 #section('tagList')

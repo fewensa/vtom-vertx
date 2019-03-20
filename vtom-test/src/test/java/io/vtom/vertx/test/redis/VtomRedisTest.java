@@ -1,5 +1,6 @@
 package io.vtom.vertx.test.redis;
 
+import io.enoa.toolkit.sys.EnvKit;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestSuite;
@@ -23,7 +24,7 @@ public class VtomRedisTest {
     this.vertx = Vertx.vertx();
     this.suite = TestSuite.create("redis");
     RedisOptions config = new RedisOptions()
-      .setHost("127.0.0.1");
+      .setHost(EnvKit.string("REDIS_HOST", "127.0.0.1"));
     RedisClient redis = RedisClient.create(vertx, config);
     this.vtomredis = VtomRedis.create(redis);
   }

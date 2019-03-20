@@ -4,6 +4,7 @@ import com.alibaba.druid.pool.DruidDataSource;
 import io.enoa.stove.firetpl.enjoy.EnjoyFiretpl;
 import io.enoa.toolkit.path.PathKit;
 import io.enoa.toolkit.prop.PropKit;
+import io.enoa.toolkit.sys.EnvKit;
 import io.vertx.core.Vertx;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.unit.Async;
@@ -44,9 +45,9 @@ public class VtomDBTest {
 
   private JDBCClient jdbcclient(Vertx vertx) {
     DruidDataSource dds = new DruidDataSource();
-    dds.setUrl(PropKit.string("rds.db.url"));
-    dds.setUsername(PropKit.string("rds.db.user"));
-    dds.setPassword(PropKit.string("rds.db.passwd"));
+    dds.setUrl(EnvKit.string("DB_URL", PropKit.string("rds.db.url")));
+    dds.setUsername(EnvKit.string("DB_USER", PropKit.string("rds.db.user")));
+    dds.setPassword(EnvKit.string("DB_PASSWD", PropKit.string("rds.db.passwd")));
     dds.setInitialSize(10);
     dds.setMinIdle(10);
     dds.setMaxActive(100);
@@ -63,12 +64,12 @@ public class VtomDBTest {
         .tx()
         .step(Step.with(cycle -> {
           System.out.println(11111);
-          return TSql.sql().select("select * from t_media", 1, 10);
+          return TSql.sql().select("select * from t_article", 1, 10);
         }).ord(2).after(1))
         .step(Step.with(cycle -> {
           System.out.println(2222);
           Scope scope = cycle.scope();
-          return TSql.sql().select("select * from t_tags where mid in ('1')");
+          return TSql.sql().select("select * from t_tags where aid in ('1')");
         }).ord(1))
         .join()
         .enqueue()
@@ -99,7 +100,7 @@ public class VtomDBTest {
       Async async = ctx.async();
 
       this.vtomdb.dependency(this.vertx)
-        .step(Step.with(cycle -> TSql.template().select("Tpl.mediaList", 1, 10)).ord(1))
+        .step(Step.with(cycle -> TSql.template().select("Tpl.articleList", 1, 10)).ord(1))
         .step(Step.with(cycle -> TSql.template().select("Tpl.tagList")).ord(2))
         .join()
         .enqueue()
