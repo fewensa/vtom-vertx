@@ -49,10 +49,49 @@ VtomFileSystem.create().dependency(vertx)
  
 通過 Promise 的方式就可以將 Vertx 中的回調參數轉換爲同步的方式書寫.
 
-PipePromise 就是通過 Pipeline 的執行後獲取的.
+`PipePromise` 就是通過 `Pipeline` 的執行後獲取的.
 
-> 同步代碼
-> TODO
+## 同步代碼
+
+注意, `Promise` 不適用與同步代碼, 如果你想要提供一個 Promise 的代碼, 你不能這麼寫
+
+```java
+public PipePromise some() {
+  EPDoneArgPromiseBuilder<PipeLifecycle> promise = Promise.builder().donearg();
+  PipePromise pipepromise = new PipePromise(promise.build());
+  String sometext = "Hello";
+  promise.dones(done -> done.execute(sometext));
+  promise.always.execute();
+  return pipepromise;
+}
+
+public void run() {
+  this.some()
+    .done(ret -> System.out.println(ret))
+    .always(() -> System.out.println("always"));
+}
+```
+
+這是不行的, 因爲調用 `some` 時, 已經直接執行了 `Promise` 裏面的方法, 然而 `done` `always` 還尚未加入到 `Promiase` 中.
+
+`Promise` 只適用與異步的方式. 因此這裏的代碼可以改成這樣.
+
+```java
+public PipePromise some(Vertx vertx) {
+  EPDoneArgPromiseBuilder<PipeLifecycle> promise = Promise.builder().donearg();
+  PipePromise pipepromise = new PipePromise(promise.build());
+  vertx.getOrCreateContext()
+    .runOnContext(v -> {
+      String sometext = "Hello";
+      promise.dones(done -> done.execute(sometext));
+      promise.always.execute();
+    });
+  return pipepromise;
+}
+```
+
+讓這段代碼加入到 Vertx 的 Eventloop 中異步去執行. 但是當你這樣執行的時候, 你有可能也會發現仍然無法工作. 原因很簡單. 因爲執行的太快了, 仍然會發生 `Promise` 尚未填充就已經執行的情況, 這時候就需要使用延遲一段時間才能達到目的. 因此你的代碼是否適合用於 Promise 這就需要你去權衡了.
+
 
 # Pipeline
 
@@ -218,40 +257,95 @@ this.suite.test("vtom.read", ctx -> {
 講解這段代碼之前, 先看一下這段代碼在做什麼事情
 
 ```text
-!                      |  
-!                      |  
-!                      v            no     -----------------         fail  
-!                 <exists testDir>  ---->  | mkdir testDir |  -->-->-->-->-->-->--+  
-!                      |                   -----------------                      |  
-!     +<--<--<--<--|   | yes                    | ok                              v  
-!     |            |   v                        |                                 |  
-!     |      +<-- <exists testFile> <-----------+                              --------  
-!     v      |         v yes                                                   | done |  
-!     |    n |    -------------------                    fail                  --------  
-!     |    o v    | delete testFile | -->-->-->-->-->-->-->-->-->-->-->-->-->-->--+  
-!     v      |    -------------------                                             ^  
-!     |      |         v                                                          |  
-!     |      v    -------------------                    fail                     |  
-!     v      +--> | create testFile | -->-->-->-->-->-->-->-->-->-->-->-->-->-->--^  
-!     |           -------------------                                             |  
-!     |                v                                                          |  
-!     v           ------------------                     fail                     ^  
-!     |           | write testFile | -->-->-->-->-->-->-->-->-->-->-->-->-->-->-->+  
-!     |           ------------------                                              |  
-!     v                v              yes   -----------------------               ^  
-!     +<--<--<--<exists testCopyFile> --->  | delete testCopyFile |               |  
-!     |                v no                 -----------------------               |  
-!     v     ---------------------------------           |                         ^  
-!     |     | copy testFile to testCopyFile |   <-------+                         |  
-!     |     ---------------------------------                                     |  
-!     v            | ok     | fail                                                ^  
-!     |            v        v                                                     |  
+!                      |
+!                      |
+!                      v            no     -----------------         fail
+!                 <exists testDir>  ---->  | mkdir testDir |  -->-->-->-->-->-->--+
+!                      |                   -----------------                      |
+!     +<--<--<--<--|   | yes                    | ok                              v
+!     |            |   v                        |                                 |
+!     |      +<-- <exists testFile> <-----------+                              --------
+!     v      |         v yes                                                   | done |
+!     |    n |    -------------------                    fail                  --------
+!     |    o v    | delete testFile | -->-->-->-->-->-->-->-->-->-->-->-->-->-->--+
+!     v      |    -------------------                                             ^
+!     |      |         v                                                          |
+!     |      v    -------------------                    fail                     |
+!     v      +--> | create testFile | -->-->-->-->-->-->-->-->-->-->-->-->-->-->--^
+!     |           -------------------                                             |
+!     |                v                                                          |
+!     v           ------------------                     fail                     ^
+!     |           | write testFile | -->-->-->-->-->-->-->-->-->-->-->-->-->-->-->+
+!     |           ------------------                                              |
+!     v                v              yes   -----------------------               ^
+!     +<--<--<--<exists testCopyFile> --->  | delete testCopyFile |               |
+!     |                v no                 -----------------------               |
+!     v     ---------------------------------           |                         ^
+!     |     | copy testFile to testCopyFile |   <-------+                         |
+!     |     ---------------------------------                                     |
+!     v            | ok     | fail                                                ^
+!     |            v        v                                                     |
 !     +-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->+
 ```
 
-看了這個流程之後, 相信聰明的你已經知道這段代碼在做什麼了. 
+看了這個流程之後, 相信聰明的你已經知道這段代碼在做什麼了. 首先判斷 testDir 目錄是否存在, 不存在則創建, 接着判斷 testFile 是否存在, 如果存在則刪除, 接着創建 testFile, 創建完畢後寫入一些內容. 寫入完畢後, 判斷 testCopyFile 是否存在, 如果存在同樣進行刪除, 之後複製 testFile 到 testCopyFile 結束整個流程.
 
 那麼現在我們就來看一下 `skip` 的作用吧.
+
+在這段代碼中有這樣代碼
+
+```java
+.step(Step.with(lifecycle -> Fs.exists(testFile)).ord(3))
+.step(Step.with(lifecycle -> {
+  Scope scope = lifecycle.scope();
+  Boolean exists = scope.value(3).as();
+  if (exists)
+    return Fs.delete(testFile);
+  return Fs.createFile(testFile).skip(skip -> skip.yes().skipOrd(5));
+}).ord(4))
+.step(Step.with(lifecycle -> Fs.createFile(testFile)).ord(5))
+```
+
+第四步的時候, 首先獲取第三步的值, 第三步是用來判斷 testFile 是否存在. 考慮上方的流程, 如果發現 testFile 存在, 則需要進行刪除, 刪除後重新創建; 如果不存在直接進行創建即可. 那麼這裏就可以用 `skip` 實現.
+
+第四步獲取到第三步檢測的值後, 發現如果存在, 則刪除 testFile, 接着就進入到第五步. 如果不存在第四步中就直接進行了文件的創建, 那麼第五步就不需要執行了, 因此直接在代碼中加入了 `.skip(skip -> skip.yes().skipOrd(5))` 用來跳過第五步.
+
+再來看另外一個案例
+
+```java
+.step(Step.with(lifecycle -> {
+    Scope scope = lifecycle.scope();
+    Page<Row> page = scope.value(1).to(DBConverter.toPageRow());
+    List<Row> rows = page.getRows();
+    StringBuilder tagsql = new StringBuilder("select mid, name from t_tags where mid in (");
+    JsonArray mids = new JsonArray();
+    for (int i = 0; i < rows.size(); i++) {
+      mids.add(rows.get(i).string("id"));
+      tagsql.append("?");
+      if (i + 1 < rows.size())
+        tagsql.append(",");
+    }
+    tagsql.append(")");
+    return TSql.sql().select(tagsql.toString()).paras(mids)
+      .skip(skip -> skip.areYouSure(mids.isEmpty()).skipOrd(2));
+  }).ord(2))
+```
+
+這個是 `Vtom` 中數據庫操作的案例, 從 `ord` 可以發現這是第二步. 這一步執行的時候, 會先獲取第一步獲取到的博文分頁記錄, 我們需要給每一個文章的標籤加入到文章, 這裏我們將所有的文章 ID 取出來, 然後用 in 的方式一次性查詢出來, 然後拼接查詢標籤的 sql 語句; 當文章表還沒有任何數據的時候, rows 是沒有數據的, 那麼拼接完畢的 sql 就會是這樣
+
+```sql
+select mid, name from t_tags where mid in ()
+```
+
+這並非是一個合法的 sql 語句, 不能讓他執行. 這個時候, 就可以使用 `skip` 使其跳過, 但是有 ID 的時候要執行.
+
+```java
+.skip(skip -> skip.areYouSure(mids.isEmpty()).skipOrd(2))
+```
+
+就像這樣, `skip.areYouSure(mids.isEmpty()).skipOrd(2)` 告訴 Pipeline 當遇到 mids 是空的時候, 跳過 2 這個步驟.
+
+是的, skip 可以跳過自身的步驟以及以後將要執行的步驟, 也可以使用 `skipId(id)` 來跳過一個 `Step` 只要在 `Step` 中設定了該 ID 即可.
 
 
 ### StepOUT
@@ -261,4 +355,36 @@ this.suite.test("vtom.read", ctx -> {
 
 ## LifeCycle
  
+
+`LifeCycle` 是 `Pipeline` 中最後一個要說明的部分了.
+
+`LifeCycle` 在一個 `Pipeline` 中可以在執行時用來記錄或者交換值, 其中包括 [`Scope`](#Scope), [`Mount`](#Mount), 以及 `Vertx`
+
+
+## Scope
+
+`Scope` 會忠實的記錄每一個步驟執行的結果值. 但是有一點要注意的是, 因爲 `Pipeline` 將多個一步的操作打包在一起了, 執行完畢後將值寫入 `Scope` 中時就無法得知具體的值類型, 因此這需要考驗你對每個代碼的理解, 該操作返回的是什麼類型.
+
+```java
+Boolean exists = scope.value(3).as();
+```
+
+如之前看到的, 判斷文件是否存在, 返回的是一個 Boolean 值, 那麼可以直接使用 `as()` 將值轉換爲 Boolean 類型.
+
+也可以使用 `to` 方法對值進行轉變, 例如上方的數據庫操作案例.
+
+```java
+Page<Row> page = scope.value(1).to(DBConverter.toPageRow());
+```
+
+通過 `to(DBConverter.toPageRow())` 將值轉變爲 `Page<Row>` 類型.
+
+
+`Scope` 中存在一個 `danger` 方法, 這通常不應該由使用者進行操作, 這是 `Pipeline` 提供給 `Component` 用來記錄的地方. 例如在 [vtom-db](https://github.com/fewensa/vtom-vertx/tree/master/vtom-db) 中, 共用同一個 `SQLConnection` 就是通過這裏實現的, 包括事物的支持.
+
+## Mount
+
+在 `Scope` 中提及到的 `danger` 使用者不便操作, 因此在 `LifeCycle` 中提供了 `mount` 用來提供給在一個 `Pipeline` 中掛載數據的機會. 可以在這裏掛載數據, 在後續的步驟中都是可用的.
+
+
 
