@@ -37,8 +37,6 @@ name: install_local
 steps:
   - name: test
     image: postgres:11-alpine
-    links:
-      - database
     commands:
       - sleep 5
       - psql -U postgres -d vtom -h database
@@ -72,6 +70,8 @@ services:
       POSTGRES_PASSWORD: passwd
     commands:
       - cp /drone/src/vtom-test/src/test/resources/schema/vtom.sql /docker-entrypoint-initdb.d/init.sql
+      - sleep 5
+      - psql -U postgres -d vtom -h database
 
 trigger:
   branch:
