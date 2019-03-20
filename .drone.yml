@@ -35,13 +35,12 @@ kind: pipeline
 name: install_local
 
 steps:
-
   - name: pg_setup
     image: postgres:11-alpine
     environment:
       PGPASSWORD: passwd
     commands:
-      - sleep 5
+      - sleep 3
       - psql -U postgres -d vtom -h database -f /drone/src/vtom-test/src/test/resources/schema/vtom.sql
 
   - name: install
@@ -72,6 +71,9 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: vtom
       POSTGRES_PASSWORD: passwd
+
+  - name: redis
+    image: redis:4-alpine
 
 trigger:
   branch:
