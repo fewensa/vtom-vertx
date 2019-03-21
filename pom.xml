@@ -17,6 +17,10 @@
     <module>vtom-web-client</module>
   </modules>
 
+  <name>Vtom</name>
+  <description>Vtom vertx</description>
+  <url>https://github.com/fewensa/vtom-vertx</url>
+
   <issueManagement>
     <url>https://github.com/fewensa/vtom-vertx/issues</url>
   </issueManagement>
