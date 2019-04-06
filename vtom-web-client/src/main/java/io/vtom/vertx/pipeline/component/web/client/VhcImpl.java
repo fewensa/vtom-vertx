@@ -49,7 +49,7 @@ class VhcImpl implements Vhc {
     this.traditional = false;
     this.charset = EoConst.CHARSET;
     this.headers = new HashSet<>();
-    this.headers.add(new HttpHeader("User-Agent", "Mozilla/5.0 Vtom-vertx/1.0-beta HttpHelper/4.0 VtomHttpClient/1.0"));
+    this.headers.add(new HttpHeader("User-Agent", "Mozilla/5.0 Vtom-vertx/1.1-beta HttpHelper/4.0 VtomHttpClient/1.0"));
     this.port = -1;
   }
 
