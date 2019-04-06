@@ -159,8 +159,8 @@ class VtomDBPipeRunnable implements PipeRunnable<TSql, VTSout> {
 
         IPSql ipsql = output.ipsql();
         PSql psql = ipsql.psql(sql);
-        int ps = output.ps(),
-          pn = output.pn();
+        int ps = output.ps() < 1 ? 1 : output.ps(),
+          pn = output.pn() < 1 ? 1 : output.pn();
 
 
         this.reportSql(output, reportmark, psql.countSql(), paras);
