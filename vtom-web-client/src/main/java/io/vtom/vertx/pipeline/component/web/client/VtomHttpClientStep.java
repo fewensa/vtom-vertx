@@ -9,10 +9,10 @@ import io.vtom.vertx.pipeline.step.StepStack;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VtomHttpClientStep implements PipeStep<Vhc> {
+public class VtomHttpClientStep implements PipeStep<Client> {
 
   private Pipeline pipeline;
-  private List<Step<? extends Vhc>> steps;
+  private List<Step<? extends Client>> steps;
   private Kv shared;
 
   public VtomHttpClientStep(Pipeline pipeline) {
@@ -20,12 +20,12 @@ public class VtomHttpClientStep implements PipeStep<Vhc> {
   }
 
   @Override
-  public VtomHttpClientStep step(StepStack<Vhc> stepstack) {
+  public VtomHttpClientStep step(StepStack<Client> stepstack) {
     return this.step(Step.with(stepstack));
   }
 
   @Override
-  public VtomHttpClientStep step(Step<? extends Vhc> step) {
+  public VtomHttpClientStep step(Step<? extends Client> step) {
     if (step == null)
       return this;
     if (steps == null)
@@ -40,7 +40,8 @@ public class VtomHttpClientStep implements PipeStep<Vhc> {
       return this.pipeline;
     this.shared = this.pipeline.lifecycle().scope().danger(id);
 
-    this.steps.forEach(step -> this.pipeline.next(new VtomWebClientRunnable(this.pipeline.lifecycle().vertx(), step, this.shared)));
+//    this.steps.forEach(step -> this.pipeline.next(new VtomWebClientRunnable(this.pipeline.lifecycle().vertx(), step, this.shared)));
+    this.steps.forEach(step -> this.pipeline.next(new VtomHttpClientRunnable(this.pipeline.lifecycle().vertx(), step, this.shared)));
     return this.pipeline;
   }
 }

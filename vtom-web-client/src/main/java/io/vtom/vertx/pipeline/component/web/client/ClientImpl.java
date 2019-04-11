@@ -17,7 +17,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.*;
 
-class VhcImpl implements Vhc {
+class ClientImpl implements Client {
 
   private HttpClientOptions options;
   private HttpVersion version;
@@ -41,8 +41,9 @@ class VhcImpl implements Vhc {
   private boolean ssl;
   private boolean alpn;
   private boolean trustAll;
+  private IRequestReporter reporter;
 
-  VhcImpl() {
+  ClientImpl() {
     this.method = HttpMethod.GET;
     this.absolute = true;
     this.encode = false;
@@ -63,78 +64,78 @@ class VhcImpl implements Vhc {
   }
 
   @Override
-  public Vhc ssl(boolean ssl) {
+  public Client ssl(boolean ssl) {
     this.ssl = ssl;
     return this;
   }
 
   @Override
-  public Vhc alpn(boolean alpn) {
+  public Client alpn(boolean alpn) {
     this.alpn = alpn;
     return this;
   }
 
   @Override
-  public Vhc trustAll(boolean trustAll) {
+  public Client trustAll(boolean trustAll) {
     this.trustAll = trustAll;
     return this;
   }
 
   @Override
-  public Vhc options(HttpClientOptions options) {
+  public Client options(HttpClientOptions options) {
     this.options = options;
     return this;
   }
 
   @Override
-  public Vhc version(HttpVersion version) {
+  public Client version(HttpVersion version) {
     this.version = version;
     return this;
   }
 
   @Override
-  public Vhc method(HttpMethod method) {
+  public Client method(HttpMethod method) {
     this.method = method;
     return this;
   }
 
   @Override
-  public Vhc charset(Charset charset) {
+  public Client charset(Charset charset) {
     this.charset = charset;
     return this;
   }
 
   @Override
-  public Vhc host(String host) {
+  public Client host(String host) {
     this.host = host;
     return this;
   }
 
   @Override
-  public Vhc port(int port) {
+  public Client port(int port) {
     this.port = port;
     return this;
   }
 
   @Override
-  public Vhc url(String url) {
+  public Client url(String url) {
     this.url = url;
     return this;
   }
 
   @Override
-  public Vhc traditional(boolean traditional) {
+  public Client traditional(boolean traditional) {
     this.traditional = traditional;
     return this;
   }
 
   @Override
-  public Vhc encode(boolean encode) {
+  public Client encode(boolean encode) {
     this.encode = encode;
     return this;
   }
 
-  private Vhc para(String name, Object value, boolean array) {
+  private Client para(String name, Object value, boolean array) {
     if (this.paras == null)
       this.paras = new HashSet<>();
     if (value instanceof Path) {
@@ -163,7 +164,7 @@ class VhcImpl implements Vhc {
   }
 
   @Override
-  public Vhc para(String name, Object value) {
+  public Client para(String name, Object value) {
     if (name == null)
       throw new IllegalArgumentException("name == null");
     if (value == null)
@@ -175,7 +176,7 @@ class VhcImpl implements Vhc {
   }
 
   @Override
-  public Vhc para(String name, Object... values) {
+  public Client para(String name, Object... values) {
     if (name == null)
       throw new IllegalArgumentException("name == null");
     if (values == null)
@@ -187,7 +188,7 @@ class VhcImpl implements Vhc {
   }
 
   @Override
-  public Vhc para(String name, Collection values) {
+  public Client para(String name, Collection values) {
     if (name == null)
       throw new IllegalArgumentException("name == null");
     if (values == null)
@@ -197,7 +198,7 @@ class VhcImpl implements Vhc {
   }
 
 //  @Override
-//  public Vhc file(String name, String filename, byte[] bytes) {
+//  public Client file(String name, String filename, byte[] bytes) {
 //    if (name == null)
 //      throw new IllegalArgumentException("name == null");
 //    if (this.formDatas == null)
@@ -207,7 +208,7 @@ class VhcImpl implements Vhc {
 //  }
 
   @Override
-  public Vhc file(String name, String filename, String path) {
+  public Client file(String name, String path, String filename) {
     if (path == null)
       throw new IllegalArgumentException("path == null");
     if (this.formDatas == null)
@@ -217,12 +218,12 @@ class VhcImpl implements Vhc {
   }
 
   @Override
-  public Vhc file(String path) {
+  public Client file(String path) {
     return this.file(null, null, path);
   }
 
   @Override
-  public Vhc raw(String raw, String contentType) {
+  public Client raw(String raw, String contentType) {
     if (raw == null)
       throw new IllegalArgumentException("raw == null");
     this.raw = raw;
@@ -232,7 +233,7 @@ class VhcImpl implements Vhc {
   }
 
   @Override
-  public Vhc header(String name, String value) {
+  public Client header(String name, String value) {
     if ("content-type".equals(name.toLowerCase()))
       this.contentType(value);
 
@@ -254,7 +255,7 @@ class VhcImpl implements Vhc {
   }
 
   @Override
-  public Vhc cookie(String name, String value) {
+  public Client cookie(String name, String value) {
     if (name == null)
       throw new IllegalArgumentException("name == null");
     if (value == null)
@@ -266,13 +267,13 @@ class VhcImpl implements Vhc {
   }
 
   @Override
-  public Vhc contentType(String contentType) {
+  public Client contentType(String contentType) {
     this.contentType = contentType;
     return this;
   }
 
   @Override
-  public Vhc proxy(ProxyOptions proxy) {
+  public Client proxy(ProxyOptions proxy) {
     if (proxy == null)
       throw new IllegalArgumentException("proxy == null");
     this.proxy = proxy;
@@ -280,7 +281,7 @@ class VhcImpl implements Vhc {
   }
 
   @Override
-  public Vhc binary(byte[] bytes) {
+  public Client binary(byte[] bytes) {
     if (bytes == null)
       throw new IllegalArgumentException("bytes == null");
     this.binary = bytes;
@@ -288,13 +289,19 @@ class VhcImpl implements Vhc {
   }
 
   @Override
-  public Vhc absolute(boolean absolute) {
+  public Client absolute(boolean absolute) {
     this.absolute = absolute;
     return this;
   }
 
   @Override
-  public Vhc skip(Handler<Skip> stepskip) {
+  public Client report(IRequestReporter reporter) {
+    this.reporter = reporter;
+    return this;
+  }
+
+  @Override
+  public Client skip(Handler<Skip> stepskip) {
     if (this.stepskips == null)
       this.stepskips = new ArrayList<>();
     this.stepskips.add(stepskip);
@@ -408,6 +415,11 @@ class VhcImpl implements Vhc {
       @Override
       public boolean absolute() {
         return absolute;
+      }
+
+      @Override
+      public IRequestReporter reporter() {
+        return reporter;
       }
 
     };

@@ -57,4 +57,6 @@ interface VtmVhcOUT {
 
   boolean absolute();
 
+  IRequestReporter reporter();
+
 }

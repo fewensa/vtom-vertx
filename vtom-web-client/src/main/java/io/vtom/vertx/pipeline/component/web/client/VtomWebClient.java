@@ -5,7 +5,7 @@ import io.vtom.vertx.pipeline.PipeComponent;
 import io.vtom.vertx.pipeline.PipeStep;
 import io.vtom.vertx.pipeline.Pipeline;
 
-public class VtomWebClient implements PipeComponent<Vhc> {
+public class VtomWebClient implements PipeComponent<Client> {
 
 
   public static VtomWebClient create() {
@@ -16,12 +16,12 @@ public class VtomWebClient implements PipeComponent<Vhc> {
   }
 
   @Override
-  public PipeStep<Vhc> dependency(Vertx vertx) {
+  public PipeStep<Client> dependency(Vertx vertx) {
     return this.dependency(Pipeline.pipeline(vertx));
   }
 
   @Override
-  public PipeStep<Vhc> dependency(Pipeline pipeline) {
+  public PipeStep<Client> dependency(Pipeline pipeline) {
     return new VtomHttpClientStep(pipeline);
   }
 }
